@@ -2,27 +2,11 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Render uses process.env.PORT
 
-// Add this at the top with your other requires
-app.use(express.text({ type: 'text/csv', limit: '2mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// ADD THIS ENDPOINT so Zapier has a place to send the data
-app.post('/api/upload-csv', (req, res) => {
-    try {
-        const newCsvData = req.body.csvData || req.body;
-        
-        // Save the data received from Zapier to the local file
-        fs.writeFileSync(CSV_FILE_PATH, newCsvData, 'utf8');
-        
-        console.log("CSV Updated via Zapier at:", new Date().toLocaleTimeString());
-        res.status(200).send("Dashboard Updated");
-    } catch (err) {
-        console.error("Zapier Upload Error:", err);
-        res.status(500).send("Upload Failed");
-    }
-});
+// Middleware to read the raw CSV text sent by Google Apps Script
+app.use(express.text({ limit: '2mb' }));
+app.use(express.static('public'));
 
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
 
@@ -31,49 +15,58 @@ const PODS = {
   "Pod Idea Farm": ["Jorge Gomez", "Melanie Barrett", "Sydney Burgese"]
 };
 
-app.use(express.static('public'));
+// 1. THE RECEIVER: This catches the data from Google Apps Script
+app.post('/api/upload-csv', (req, res) => {
+    try {
+        const csvContent = req.body;
+        if (!csvContent || csvContent.length < 10) {
+            return res.status(400).send("Invalid CSV data received.");
+        }
 
+        fs.writeFileSync(CSV_FILE_PATH, csvContent, 'utf8');
+        console.log("CSV Updated from Google Apps Script at:", new Date().toLocaleTimeString());
+        res.status(200).send("Dashboard Updated Successfully");
+    } catch (err) {
+        console.error("Upload Error:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+// 2. THE PARSER: Logic to handle the specific CSV columns and dates
 function parseKantataCSV(data) {
     const lines = data.split(/\r?\n/);
     const results = [];
     
-    // Determine current day index (0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri)
     const today = new Date();
-    let dayIndex = today.getDay() - 1; // getDay() returns 1 for Monday
-    if (dayIndex < 0 || dayIndex > 4) dayIndex = 0; // Default to Monday if weekend
+    let dayIndex = today.getDay() - 1; // 0=Mon, 1=Tue, etc.
+    if (dayIndex < 0 || dayIndex > 4) dayIndex = 0; // Default to Mon on weekends
 
     for (let i = 1; i < lines.length; i++) {
         const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         if (row.length < 6) continue;
 
         let userName = row[0].replace(/"/g, '').trim();
+        // Flip "Last, First" to "First Last"
         if (userName.includes(',')) {
             const parts = userName.split(',');
             userName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
 
-        // dailyAvail columns: [1]=Mon, [2]=Tue, [3]=Wed, [4]=Thu, [5]=Fri
         const allDaysAvail = row.slice(1, 6).map(val => parseFloat(val.replace(/"/g, '')) || 0);
-        
-        // MATH 1: Weekly Scheduled (Total load for the whole week)
         const weeklyScheduled = 40 - allDaysAvail.reduce((a, b) => a + b, 0);
-        
-        // MATH 2: Remaining Availability (Today + Remaining Days)
-        // If it's Wednesday (Index 2), we sum indices 2, 3, and 4.
         const remainingAvail = allDaysAvail.slice(dayIndex).reduce((a, b) => a + b, 0);
 
-        results.push({ 
-            name: userName, 
-            available: remainingAvail, 
-            scheduled: weeklyScheduled 
-        });
+        results.push({ name: userName, available: remainingAvail, scheduled: weeklyScheduled });
     }
     return results;
 }
 
+// 3. THE API: Feeds the frontend dashboard
 app.get('/api/stats', (req, res) => {
     try {
-        if (!fs.existsSync(CSV_FILE_PATH)) return res.json({ pulse: "Waiting...", pods: [] });
+        if (!fs.existsSync(CSV_FILE_PATH)) {
+            return res.json({ pulse: "Waiting for first sync...", pods: [] });
+        }
 
         const fileContent = fs.readFileSync(CSV_FILE_PATH, 'utf8');
         const teamData = parseKantataCSV(fileContent);
@@ -81,7 +74,6 @@ app.get('/api/stats', (req, res) => {
         const livePods = Object.keys(PODS).map(podName => {
             const members = PODS[podName].map(name => {
                 const match = teamData.find(u => u.name.toLowerCase().includes(name.toLowerCase()));
-                
                 const availHours = match ? match.available : 0;
                 const schedHours = match ? match.scheduled : 0;
                 const loadPercent = Math.round((schedHours / 40) * 100);
@@ -99,7 +91,7 @@ app.get('/api/stats', (req, res) => {
         res.json({
             projectCount: 14, 
             taskCount: 82,    
-            pulse: `WEEK PROGRESS: ${new Intl.DateTimeFormat('en-US', {weekday: 'long'}).format(new Date())}`,
+            pulse: `STATION ACTIVE: ${new Intl.DateTimeFormat('en-US', {weekday: 'long'}).format(new Date())}`,
             lastUpdate: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             pods: livePods
         });
@@ -108,4 +100,4 @@ app.get('/api/stats', (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`DASHBOARD READY: http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`SERVER RUNNING ON PORT ${PORT}`));
