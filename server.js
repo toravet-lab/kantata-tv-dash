@@ -19,6 +19,7 @@ app.post('/api/upload-csv', (req, res) => {
     try {
         if (!req.body) return res.status(400).send("No data");
         fs.writeFileSync(CSV_FILE_PATH, req.body, 'utf8');
+        console.log("CSV Updated from Google Script at:", new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
         res.status(200).send("Dashboard Updated Successfully");
     } catch (err) { res.status(500).send("Server Error"); }
 });
@@ -26,8 +27,11 @@ app.post('/api/upload-csv', (req, res) => {
 function parseKantataCSV(data) {
     const lines = data.split(/\r?\n/);
     const results = [];
-    const today = new Date();
-    let dayIndex = today.getDay() - 1; 
+    
+    // Day logic for Wednesday forward
+    const today = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
+    const dateObj = new Date(today);
+    let dayIndex = dateObj.getDay() - 1; 
     if (dayIndex < 0 || dayIndex > 4) dayIndex = 0; 
 
     for (let i = 1; i < lines.length; i++) {
@@ -58,7 +62,7 @@ app.get('/api/stats', (req, res) => {
             const members = PODS[podName].map(name => {
                 const match = teamData.find(u => u.name.toLowerCase().includes(name.toLowerCase()));
                 const availHours = match ? match.available : 0;
-                const schedHours = match ? match.scheduled : 40; // Default full if not found
+                const schedHours = match ? match.scheduled : 0;
                 
                 return {
                     name: name,
@@ -71,8 +75,14 @@ app.get('/api/stats', (req, res) => {
         });
 
         res.json({
-            projectCount: 14, taskCount: 82,
-            lastUpdate: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            projectCount: 14, 
+            taskCount: 82,
+            pulse: `STATION ACTIVE: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date())}`,
+            lastUpdate: new Date().toLocaleTimeString('en-US', { 
+                timeZone: 'America/New_York', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            }),
             pods: livePods
         });
     } catch (err) { res.status(500).json({ error: "Fail" }); }
