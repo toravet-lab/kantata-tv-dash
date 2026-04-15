@@ -2,30 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kantata TV Dashboard</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="top-stats">
-        <div class="stat-group">
-            <div class="stat-card">
-                <span class="label">ACTIVE PROJECTS</span>
-                <span class="value" id="project-count">14</span>
-            </div>
-            <div class="stat-card">
-                <span class="label">STARTED TASKS</span>
-                <span class="value" id="task-count">82</span>
-            </div>
+    <header>
+        <div class="stat-box">
+            <div class="stat-label">ACTIVE PROJECTS</div>
+            <div class="stat-value" id="project-count">14</div>
         </div>
-        <div class="sync-status">
-            <h1 id="pulse-text">RESOURCE AVAILABILITY</h1>
-            <p id="last-update">Last Sync: --:--</p>
+        <div class="stat-box">
+            <div class="stat-label">STARTED TASKS</div>
+            <div class="stat-value" id="task-count">82</div>
         </div>
+    </header>
+
+    <div class="sync-header">
+        <h2>Resource Availability</h2>
+        <p id="last-sync-time">Last Sync: --:--</p>
     </div>
 
-    <div id="pods-container" class="pods-grid">
-        </div>
+    <div id="pods-container"></div>
 
     <script src="script.js"></script>
 </body>
