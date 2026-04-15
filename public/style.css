@@ -4,14 +4,14 @@ body {
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    width: 1000px; /* Locked width for Google Site embed consistency */
+    width: 960px; /* Fixed width to prevent Google Sites from squishing it */
     overflow-x: hidden;
 }
 
 header {
     display: flex;
-    gap: 20px;
-    margin-bottom: 30px;
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
 .stat-box {
@@ -19,20 +19,20 @@ header {
     background: #0d1414;
     padding: 15px;
     border-radius: 8px;
-    border-top: 4px solid #00ff88;
+    border-left: 6px solid #00ff88; /* Matches your screenshot style */
     text-align: center;
 }
 
-.stat-label { color: #5fb394; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 5px; }
-.stat-value { color: #00ff88; font-size: 3.5rem; font-weight: bold; line-height: 1; }
+.stat-label { color: #5fb394; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; }
+.stat-value { color: #00ff88; font-size: 4rem; font-weight: bold; line-height: 1; }
 
 .sync-header {
     text-align: center;
     margin-bottom: 30px;
 }
 
-.sync-header h2 { text-transform: uppercase; letter-spacing: 3px; margin: 0; font-size: 1.5rem; }
-.sync-header p { color: #5fb394; font-size: 0.8rem; margin: 5px 0 0; }
+.sync-header h2 { text-transform: uppercase; letter-spacing: 4px; margin: 0; font-size: 1.6rem; color: #fff; }
+.sync-header p { color: #5fb394; font-size: 0.85rem; margin-top: 5px; }
 
 .pod-card {
     background: #0d1414;
@@ -42,19 +42,19 @@ header {
     border: 1px solid #1a2626;
 }
 
-h3 { font-size: 2rem; margin: 0 0 20px 0; border-bottom: 1px solid #1a2626; padding-bottom: 10px; }
+h3 { font-size: 2.2rem; margin: 0 0 20px 0; border-bottom: 1px solid #1a2626; padding-bottom: 10px; color: #fff; }
 
-.member-row { margin-bottom: 25px; }
-.member-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 6px; }
-.member-name { font-size: 1.5rem; font-weight: bold; }
-.member-avail { font-size: 0.8rem; color: #00ff88; font-weight: bold; }
+.member-row { margin-bottom: 30px; }
+.member-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; }
+.member-name { font-size: 1.6rem; font-weight: bold; }
+.member-avail { font-size: 0.85rem; color: #00ff88; font-weight: bold; }
 
-.bar-container { display: flex; align-items: center; gap: 15px; }
-.bar-bg { flex: 1; height: 40px; background: #1a2626; border-radius: 4px; overflow: hidden; }
-.bar-fill { height: 100%; background: #00ff88; transition: width 0.8s ease; }
-.percent-label { font-size: 2rem; font-weight: 900; width: 80px; text-align: right; }
+.bar-container { display: flex; align-items: center; gap: 20px; }
+.bar-bg { flex: 1; height: 45px; background: #1a2626; border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; background: #00ff88; transition: width 0.8s ease-in-out; }
+.percent-label { font-size: 2.5rem; font-weight: 900; width: 100px; text-align: right; }
 
-/* OVERBOOKED ALERT */
+/* OVERBOOKED ALERT (RED) */
 .overbooked .member-name, 
 .overbooked .member-avail, 
 .overbooked .percent-label { color: #ff4444; }
