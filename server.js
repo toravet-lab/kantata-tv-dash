@@ -4,6 +4,26 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 
+// Add this at the top with your other requires
+app.use(express.text({ type: 'text/csv', limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// ADD THIS ENDPOINT so Zapier has a place to send the data
+app.post('/api/upload-csv', (req, res) => {
+    try {
+        const newCsvData = req.body.csvData || req.body;
+        
+        // Save the data received from Zapier to the local file
+        fs.writeFileSync(CSV_FILE_PATH, newCsvData, 'utf8');
+        
+        console.log("CSV Updated via Zapier at:", new Date().toLocaleTimeString());
+        res.status(200).send("Dashboard Updated");
+    } catch (err) {
+        console.error("Zapier Upload Error:", err);
+        res.status(500).send("Upload Failed");
+    }
+});
+
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
 
 const PODS = {
