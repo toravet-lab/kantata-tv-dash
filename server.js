@@ -40,6 +40,7 @@ function parseKantataCSV(data) {
             userName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
 
+        // Get all 5 days for the HUD percentage
         const m = parseFloat(row[1].replace(/"/g, '')) || 0;
         const t = parseFloat(row[2].replace(/"/g, '')) || 0;
         const w = parseFloat(row[3].replace(/"/g, '')) || 0;
@@ -47,7 +48,7 @@ function parseKantataCSV(data) {
         const f = parseFloat(row[5].replace(/"/g, '')) || 0;
         const week = [m, t, w, th, f];
 
-        // UTILIZATION MATH: (40h capacity - sum of availability) / 40h
+        // 112% MATH: Total weekly scheduled vs 40h capacity
         const totalWeeklyAvail = m + t + w + th + f;
         const totalWeeklyScheduled = 40 - totalWeeklyAvail;
         const utilPercent = Math.round((totalWeeklyScheduled / 40) * 100);
@@ -90,4 +91,4 @@ app.get('/api/stats', (req, res) => {
     } catch (err) { res.status(500).json({ error: "Fail" }); }
 });
 
-app.listen(PORT, () => console.log(`Command Center Live` ));
+app.listen(PORT, () => console.log(`Command Center Live`));

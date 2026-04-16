@@ -11,71 +11,80 @@
 body {
     background-color: var(--bg-black);
     color: white;
-    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     margin: 0;
-    padding: 50px;
+    padding: 40px;
     display: flex;
+    min-height: 100vh;
 }
 
-/* SIDEBAR LAYOUT */
+/* SIDEBAR COMMAND CENTER */
 header {
-    width: 280px;
+    width: 260px;
     display: flex;
     flex-direction: column;
     gap: 20px;
     position: fixed;
+    height: calc(100vh - 80px);
 }
 
 .stat-card {
-    background: var(--card-navy);
+    background: linear-gradient(145deg, #005a80, var(--card-navy));
     padding: 25px;
-    border-radius: 4px;
-    border-left: 6px solid var(--accent-blue);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.stat-card .label { color: var(--accent-blue); font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 5px; }
-.stat-card .value { font-size: 4.5rem; font-weight: 800; line-height: 1; }
+.stat-card .label { color: var(--accent-blue); font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; display: block; }
+.stat-card .value { font-size: 5rem; font-weight: 900; line-height: 0.9; }
 
-.sync-status { margin-top: auto; padding-top: 50px; border-top: 1px solid #333; }
-.sync-status h1 { font-size: 1.1rem; letter-spacing: 2px; color: var(--text-gray); margin-bottom: 5px; }
-.sync-status p { font-size: 0.9rem; color: var(--accent-blue); font-weight: bold; }
+.sync-status { margin-top: auto; padding-top: 30px; }
+.sync-status h1 { font-size: 0.9rem; color: var(--text-gray); letter-spacing: 1.5px; margin: 0; }
+.sync-status p { font-size: 1rem; color: var(--accent-blue); font-weight: 800; margin: 5px 0 0; }
 
-/* PODS GRID */
+/* MAIN GRID */
 #pods-container {
-    margin-left: 350px;
+    margin-left: 320px;
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
     gap: 30px;
 }
 
 .pod-card {
-    background: #2c3032;
-    padding: 35px;
+    background: rgba(44, 48, 50, 0.5);
+    padding: 30px;
     border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
 .pod-card h3 {
-    margin: 0 0 30px 0;
-    font-size: 1.8rem;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border-bottom: 1px solid #444;
+    margin: 0 0 35px 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #3a3f41;
     padding-bottom: 15px;
 }
 
 .member-row { margin-bottom: 35px; }
-.member-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
-.member-name { font-size: 1.6rem; font-weight: 700; }
-.status-label { font-size: 0.8rem; font-weight: 900; letter-spacing: 1px; }
+
+.member-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+}
+
+.member-name { font-size: 1.8rem; font-weight: 700; }
+.status-label { font-size: 0.85rem; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; }
 
 .bar-wrapper { display: flex; align-items: center; gap: 20px; }
-.bar-bg { flex: 1; height: 40px; background: var(--bg-black); border-radius: 4px; overflow: hidden; }
-.bar-fill { height: 100%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
-.bar-percent { font-size: 2.2rem; font-weight: 900; width: 90px; text-align: right; }
+.bar-bg { flex: 1; height: 45px; background: #1a1c1e; border-radius: 6px; overflow: hidden; }
+.bar-fill { height: 100%; transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.bar-percent { font-size: 2.8rem; font-weight: 900; width: 110px; text-align: right; line-height: 1; }
 
-/* STATUS COLORS */
+/* COLOR STATES */
 .status-normal .bar-fill { background: var(--accent-blue); }
 .status-normal .status-label, .status-normal .bar-percent { color: var(--accent-blue); }
 
@@ -83,4 +92,5 @@ header {
 .status-warning .status-label, .status-warning .bar-percent { color: var(--accent-yellow); }
 
 .status-overbooked .bar-fill { background: var(--accent-red); }
-.status-overbooked .status-label, .status-overbooked .bar-percent, .status-overbooked .member-name { color: var(--accent-peach); }
+.status-overbooked .status-label, .status-overbooked .bar-percent { color: var(--accent-red); }
+.status-overbooked .member-name { color: var(--accent-peach); }

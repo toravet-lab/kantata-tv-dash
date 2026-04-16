@@ -1,7 +1,7 @@
 async function refreshDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') !== 'agency2024') {
-        document.body.innerHTML = `<div style="color:white;text-align:center;width:100%;margin-top:200px;"><h1>403: ACCESS DENIED</h1></div>`;
+        document.body.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100vh; width:100%; font-family:sans-serif;"><h1>ACCESS DENIED</h1></div>`;
         return;
     }
 
@@ -26,7 +26,7 @@ async function refreshDashboard() {
                 let statusClass = 'status-normal';
                 let labelText = `${member.hoursLeft}H LEFT`;
                 
-                if (member.percent > 85 && member.percent <= 100) {
+                if (member.percent >= 85 && member.percent <= 100) {
                     statusClass = 'status-warning';
                     labelText = 'AT CAPACITY';
                 } else if (member.percent > 100) {
