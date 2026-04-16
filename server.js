@@ -19,12 +19,18 @@ app.post('/api/upload-csv', (req, res) => {
     try {
         const { csv, projectCount, taskCount, overdueCount } = req.body;
         if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
-        liveCounts.projects = projectCount || 0;
-        liveCounts.tasks = taskCount || 0;
-        liveCounts.overdue = overdueCount || 0;
+        
+        // Update counts (only if they are provided)
+        liveCounts.projects = (projectCount !== undefined) ? projectCount : liveCounts.projects;
+        liveCounts.tasks = (taskCount !== undefined) ? taskCount : liveCounts.tasks;
+        liveCounts.overdue = (overdueCount !== undefined) ? overdueCount : liveCounts.overdue;
+
+        console.log(`Updated: P:${liveCounts.projects} T:${liveCounts.tasks} O:${liveCounts.overdue}`);
         res.status(200).send("Sync Successful");
     } catch (err) { res.status(500).send("Error"); }
 });
+
+// ... (keep the rest of the server.js the same as the previous version)
 
 function parseKantataCSV(data) {
     const lines = data.split(/\r?\n/);
