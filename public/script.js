@@ -29,22 +29,25 @@ async function refreshDashboard() {
             
             let membersHtml = `<h3>${pod.name}</h3>`;
             pod.members.forEach(member => {
-                const statusClass = member.isOver ? 'overbooked' : 'normal';
-                
-                membersHtml += `
-                    <div class="member-row ${statusClass}">
-                        <div class="member-header">
-                            <span class="member-name">${member.name}</span>
-                            <span class="member-avail">${member.hoursLeft}H REMAINING THIS WEEK</span>
-                        </div>
-                        <div class="bar-wrapper">
-                            <div class="bar-bg">
-                                <div class="bar-fill" style="width: ${Math.min(member.percent, 100)}%"></div>
-                            </div>
-                            <span class="bar-percent">${member.percent}%</span>
-                        </div>
-                    </div>`;
-            });
+    // Determine color status based on your new palette
+    let statusClass = 'status-normal';
+    if (member.percent > 80 && member.percent <= 100) statusClass = 'status-warning';
+    if (member.percent > 100) statusClass = 'status-overbooked';
+    
+    membersHtml += `
+        <div class="member-row ${statusClass}">
+            <div class="member-header">
+                <span class="member-name">${member.name}</span>
+                <span class="member-avail">${member.hoursLeft}H REMAINING</span>
+            </div>
+            <div class="bar-wrapper">
+                <div class="bar-bg">
+                    <div class="bar-fill" style="width: ${Math.min(member.percent, 100)}%"></div>
+                </div>
+                <span class="bar-percent">${member.percent}%</span>
+            </div>
+        </div>`;
+});
             podDiv.innerHTML = membersHtml;
             container.innerHTML += podDiv.outerHTML;
         });
