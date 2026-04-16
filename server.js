@@ -51,17 +51,31 @@ function parseKantataCSV(data) {
     for (let i = 1; i < lines.length; i++) {
         const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         if (row.length < 6) continue;
+        
         let name = row[0].replace(/"/g, '').trim();
         if (name.includes(',')) {
             const p = name.split(',');
             name = `${p[1].trim()} ${p[0].trim()}`;
         }
-        const hrs = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
-        const totalSched = 40 - hrs.reduce((a, b) => a + b, 0);
+
+        // Row[1-5] are the availability numbers M-F
+        const availabilityValues = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
+        
+        // Total availability for the week
+        const weeklyAvailable = availabilityValues.reduce((a, b) => a + b, 0);
+        
+        // Calculation: (40 hours total - available hours) / 40
+        // Example: (40 - 2.5) / 40 = 93.75%
+        const scheduledHours = 40 - weeklyAvailable;
+        const utilPercent = Math.round((scheduledHours / 40) * 100);
+
+        // Hours left TODAY/TOMORROW (based on current dayIndex)
+        const remainingAvail = availabilityValues.slice(dayIndex).reduce((a, b) => a + b, 0);
+
         results.push({ 
             name, 
-            available: hrs.slice(dayIndex).reduce((a, b) => a + b, 0), 
-            percent: Math.round((totalSched / 40) * 100) 
+            available: remainingAvail, 
+            percent: utilPercent 
         });
     }
     return results;
