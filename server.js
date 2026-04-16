@@ -44,6 +44,8 @@ app.post('/api/upload-csv', (req, res) => {
 function parseKantataCSV(data) {
     const lines = data.split(/\r?\n/);
     const results = [];
+    
+    // Get current Day of Week (0=Sun, 1=Mon... 5=Fri)
     const dateObj = new Date(new Date().toLocaleString("en-US", {timeZone: "America/New_York"}));
     let dayIndex = dateObj.getDay() - 1; 
     if (dayIndex < 0 || dayIndex > 4) dayIndex = 0; 
@@ -58,18 +60,17 @@ function parseKantataCSV(data) {
             name = `${p[1].trim()} ${p[0].trim()}`;
         }
 
-        // Row[1-5] are the availability numbers M-F
+        // Row[1-5] are M-F availability. 
+        // Positive = Hours Free | Negative = Hours Overbooked
         const availabilityValues = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
         
-        // Total availability for the week
+        // 1. Calculate Weekly Utilization
         const weeklyAvailable = availabilityValues.reduce((a, b) => a + b, 0);
-        
-        // Calculation: (40 hours total - available hours) / 40
-        // Example: (40 - 2.5) / 40 = 93.75%
-        const scheduledHours = 40 - weeklyAvailable;
+        const scheduledHours = 40 - weeklyAvailable; 
         const utilPercent = Math.round((scheduledHours / 40) * 100);
 
-        // Hours left TODAY/TOMORROW (based on current dayIndex)
+        // 2. Calculate "Hours Left" for the rest of the week
+        // This sums today + remaining days
         const remainingAvail = availabilityValues.slice(dayIndex).reduce((a, b) => a + b, 0);
 
         results.push({ 
