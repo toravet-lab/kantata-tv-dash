@@ -8,7 +8,15 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.static('public'));
 
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
+const COUNTS_FILE_PATH = path.join(__dirname, 'counts.json');
+
+// LOAD EXISTING COUNTS ON RESTART
 let liveCounts = { projects: 0, started: 0, notStarted: 0, overdue: 0 };
+if (fs.existsSync(COUNTS_FILE_PATH)) {
+    try {
+        liveCounts = JSON.parse(fs.readFileSync(COUNTS_FILE_PATH, 'utf8'));
+    } catch (e) { console.log("Error loading saved counts"); }
+}
 
 const PODS = {
   "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
@@ -20,10 +28,14 @@ app.post('/api/upload-csv', (req, res) => {
         const { csv, projectCount, startedCount, notStartedCount, overdueCount } = req.body;
         if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
         
+        // Update local memory
         liveCounts.projects = projectCount || 0;
         liveCounts.started = startedCount || 0;
         liveCounts.notStarted = notStartedCount || 0;
         liveCounts.overdue = overdueCount || 0;
+
+        // PERSIST TO DISK (Prevents the "0" issue)
+        fs.writeFileSync(COUNTS_FILE_PATH, JSON.stringify(liveCounts), 'utf8');
 
         res.status(200).send("Sync Successful");
     } catch (err) { res.status(500).send("Error"); }
@@ -75,11 +87,11 @@ app.get('/api/stats', (req, res) => {
             startedCount: liveCounts.started,
             notStartedCount: liveCounts.notStarted,
             overdueCount: liveCounts.overdue,
-            pulse: `RESOURCE AVAILABILITY: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
+            pulse: `RESOURCE MANAGEMENT: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
             lastUpdate: new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }),
             pods
         });
     } catch (err) { res.status(500).json({ error: "Fail" }); }
 });
 
-app.listen(PORT, () => console.log("Live"));
+app.listen(PORT, () => console.log("Station Active with Persistence"));
