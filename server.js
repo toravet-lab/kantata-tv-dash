@@ -15,7 +15,7 @@ let liveCounts = { projects: 0, started: 0, notStarted: 0, overdue: 0 };
 if (fs.existsSync(COUNTS_FILE_PATH)) {
     try {
         liveCounts = JSON.parse(fs.readFileSync(COUNTS_FILE_PATH, 'utf8'));
-    } catch (e) { console.log("Error loading saved counts"); }
+    } catch (e) { console.log("Restarting: Loaded saved counts."); }
 }
 
 const PODS = {
@@ -28,15 +28,12 @@ app.post('/api/upload-csv', (req, res) => {
         const { csv, projectCount, startedCount, notStartedCount, overdueCount } = req.body;
         if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
         
-        // Update local memory
         liveCounts.projects = projectCount || 0;
         liveCounts.started = startedCount || 0;
         liveCounts.notStarted = notStartedCount || 0;
         liveCounts.overdue = overdueCount || 0;
 
-        // PERSIST TO DISK (Prevents the "0" issue)
         fs.writeFileSync(COUNTS_FILE_PATH, JSON.stringify(liveCounts), 'utf8');
-
         res.status(200).send("Sync Successful");
     } catch (err) { res.status(500).send("Error"); }
 });
@@ -51,26 +48,26 @@ function parseKantataCSV(data) {
     for (let i = 1; i < lines.length; i++) {
         const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         if (row.length < 6) continue;
-        
         let name = row[0].replace(/"/g, '').trim();
         if (name.includes(',')) {
             const p = name.split(',');
             name = `${p[1].trim()} ${p[0].trim()}`;
         }
-
-        const availMtoF = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
         
-        // Math: 40 hours minus total availability
-        const totalAvail = availMtoF.reduce((a, b) => a + b, 0);
-        const scheduled = 40 - totalAvail;
+        // M-F Available Hours
+        const availValues = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
+        
+        // Math: 40hr week - Sum of Available hours = Scheduled hours
+        const totalAvailable = availValues.reduce((a, b) => a + b, 0);
+        const scheduled = 40 - totalAvailable;
         const percent = Math.round((scheduled / 40) * 100);
 
-        // Hours left today + remaining days
-        const hoursLeft = availMtoF.slice(dayIndex).reduce((a, b) => a + b, 0);
+        // Remaining availability for the week (starting from today)
+        const currentAvail = availValues.slice(dayIndex).reduce((a, b) => a + b, 0);
 
         results.push({ 
             name, 
-            available: hoursLeft, 
+            available: currentAvail.toFixed(1), 
             percent: percent 
         });
     }
@@ -87,7 +84,7 @@ app.get('/api/stats', (req, res) => {
                 const match = teamData.find(u => u.name.toLowerCase().includes(mName.toLowerCase()));
                 return {
                     name: mName,
-                    hoursLeft: match ? match.available.toFixed(1) : "0.0",
+                    hoursLeft: match ? match.available : "0.0",
                     percent: match ? match.percent : 0,
                 };
             })
@@ -97,11 +94,11 @@ app.get('/api/stats', (req, res) => {
             startedCount: liveCounts.started,
             notStartedCount: liveCounts.notStarted,
             overdueCount: liveCounts.overdue,
-            pulse: `RESOURCE MANAGEMENT: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
+            pulse: `RESOURCE AVAILABILITY: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
             lastUpdate: new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }),
             pods
         });
     } catch (err) { res.status(500).json({ error: "Fail" }); }
 });
 
-app.listen(PORT, () => console.log("Station Active with Persistence"));
+app.listen(PORT, () => console.log("Station Active"));

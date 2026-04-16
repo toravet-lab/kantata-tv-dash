@@ -1,7 +1,7 @@
 async function refreshDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') !== 'agency2024') {
-        document.body.innerHTML = `<h1 style="color:white;text-align:center;">ACCESS DENIED</h1>`;
+        document.body.innerHTML = `<h1 style="color:white;text-align:center;padding-top:50px;">ACCESS DENIED</h1>`;
         return;
     }
 
@@ -48,7 +48,7 @@ async function refreshDashboard() {
             podDiv.innerHTML = html;
             container.innerHTML += podDiv.outerHTML;
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Refresh Error", e); }
 }
 setInterval(refreshDashboard, 30000);
 refreshDashboard();
