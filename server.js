@@ -4,10 +4,11 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.text({ limit: '2mb' }));
+app.use(express.json({ limit: '5mb' })); // Support JSON for the new payload
 app.use(express.static('public'));
 
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
+let liveCounts = { projects: 0, tasks: 0 };
 
 const PODS = {
   "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
@@ -16,9 +17,14 @@ const PODS = {
 
 app.post('/api/upload-csv', (req, res) => {
     try {
-        if (!req.body) return res.status(400).send("No data");
-        fs.writeFileSync(CSV_FILE_PATH, req.body, 'utf8');
-        res.status(200).send("Dashboard Updated Successfully");
+        const { csv, projectCount, taskCount } = req.body;
+        if (!csv) return res.status(400).send("Missing CSV");
+
+        fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
+        liveCounts.projects = projectCount || 0;
+        liveCounts.tasks = taskCount || 0;
+
+        res.status(200).send("Sync Successful");
     } catch (err) { res.status(500).send("Server Error"); }
 });
 
@@ -40,21 +46,15 @@ function parseKantataCSV(data) {
             userName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
 
-        // Get all 5 days for the HUD percentage
         const m = parseFloat(row[1].replace(/"/g, '')) || 0;
         const t = parseFloat(row[2].replace(/"/g, '')) || 0;
         const w = parseFloat(row[3].replace(/"/g, '')) || 0;
         const th = parseFloat(row[4].replace(/"/g, '')) || 0;
         const f = parseFloat(row[5].replace(/"/g, '')) || 0;
-        const week = [m, t, w, th, f];
 
-        // 112% MATH: Total weekly scheduled vs 40h capacity
         const totalWeeklyAvail = m + t + w + th + f;
-        const totalWeeklyScheduled = 40 - totalWeeklyAvail;
-        const utilPercent = Math.round((totalWeeklyScheduled / 40) * 100);
-
-        // REMAINING HOURS: Only today through Friday
-        const remainingAvail = week.slice(dayIndex).reduce((a, b) => a + b, 0);
+        const utilPercent = Math.round(((40 - totalWeeklyAvail) / 40) * 100);
+        const remainingAvail = [m, t, w, th, f].slice(dayIndex).reduce((a, b) => a + b, 0);
 
         results.push({ name: userName, available: remainingAvail, percent: utilPercent });
     }
@@ -79,12 +79,10 @@ app.get('/api/stats', (req, res) => {
             return { name: podName, members };
         });
 
-        const currentDay = new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date());
-
         res.json({
-            projectCount: 14, 
-            taskCount: 82,
-            pulse: `RESOURCE AVAILABILITY: ${currentDay.toUpperCase()}`,
+            projectCount: liveCounts.projects, 
+            taskCount: liveCounts.tasks,
+            pulse: `RESOURCE AVAILABILITY: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
             lastUpdate: new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }),
             pods: livePods
         });
