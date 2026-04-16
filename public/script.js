@@ -1,7 +1,7 @@
 async function refreshDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') !== 'agency2024') {
-        document.body.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100vh; width:100%; font-family:sans-serif;"><h1>ACCESS DENIED</h1></div>`;
+        document.body.innerHTML = `<div style="color:white;text-align:center;padding-top:100px;"><h1>ACCESS DENIED</h1></div>`;
         return;
     }
 
