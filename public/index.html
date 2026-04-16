@@ -4,29 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
-    <title>Kantata TV Dashboard</title>
+    <title>Agency Command Center</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <div class="stat-group">
-            <div class="stat-card">
-                <span class="label">ACTIVE PROJECTS</span>
-                <span class="value" id="project-count">--</span>
-            </div>
-            <div class="stat-card">
-                <span class="label">STARTED TASKS</span>
-                <span class="value" id="task-count">--</span>
-            </div>
+        <div class="stat-card">
+            <span class="label">ACTIVE PROJECTS</span>
+            <span class="value" id="project-count">--</span>
         </div>
+        <div class="stat-card">
+            <span class="label">STARTED TASKS</span>
+            <span class="value" id="task-count">--</span>
+        </div>
+        <div class="stat-card overdue-card" id="overdue-wrapper">
+            <span class="label">OVERDUE TASKS</span>
+            <span class="value" id="overdue-count">--</span>
+        </div>
+        
         <div class="sync-status">
-            <h1 id="pulse-text">RESOURCE AVAILABILITY</h1>
+            <h1 id="pulse-text">RESOURCE MANAGEMENT</h1>
             <p id="last-update">Last Sync: --:--</p>
         </div>
     </header>
 
-    <div id="pods-container" class="pods-grid">
-        </div>
+    <div id="pods-container" class="pods-grid"></div>
 
     <script src="script.js"></script>
 </body>

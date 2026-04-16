@@ -1,7 +1,7 @@
 async function refreshDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') !== 'agency2024') {
-        document.body.innerHTML = `<div style="display:flex;justify-content:center;align-items:center;height:100vh;color:white;"><h1>ACCESS DENIED</h1></div>`;
+        document.body.innerHTML = `<h1 style="color:white;text-align:center;">ACCESS DENIED</h1>`;
         return;
     }
 
@@ -11,8 +11,13 @@ async function refreshDashboard() {
 
         document.getElementById('project-count').textContent = data.projectCount;
         document.getElementById('task-count').textContent = data.taskCount;
+        document.getElementById('overdue-count').textContent = data.overdueCount;
         document.getElementById('last-update').textContent = `SYNC: ${data.lastUpdate}`;
         document.getElementById('pulse-text').textContent = data.pulse;
+
+        const overdueWrapper = document.getElementById('overdue-wrapper');
+        if (data.overdueCount > 0) overdueWrapper.classList.add('pulse-alert');
+        else overdueWrapper.classList.remove('pulse-alert');
 
         const container = document.getElementById('pods-container');
         container.innerHTML = '';
@@ -20,39 +25,29 @@ async function refreshDashboard() {
         data.pods.forEach(pod => {
             const podDiv = document.createElement('div');
             podDiv.className = 'pod-card';
-            
-            let membersHtml = `<h3>${pod.name}</h3>`;
+            let html = `<h3>${pod.name}</h3>`;
             pod.members.forEach(member => {
-                let statusClass = 'status-normal';
-                let labelText = `${member.hoursLeft}H LEFT`;
+                let status = 'status-normal';
+                let label = `${member.hoursLeft}H LEFT`;
+                if (member.percent > 85 && member.percent <= 100) status = 'status-warning', label = 'AT CAPACITY';
+                if (member.percent > 100) status = 'status-overbooked', label = `OVERBOOKED (${member.hoursLeft}H)`;
                 
-                if (member.percent >= 85 && member.percent <= 100) {
-                    statusClass = 'status-warning';
-                    labelText = 'AT CAPACITY';
-                } else if (member.percent > 100) {
-                    statusClass = 'status-overbooked';
-                    labelText = `OVERBOOKED (${member.hoursLeft}H)`;
-                }
-                
-                membersHtml += `
-                    <div class="member-row ${statusClass}">
+                html += `
+                    <div class="member-row ${status}">
                         <div class="member-header">
                             <span class="member-name">${member.name}</span>
-                            <span class="status-label">${labelText}</span>
+                            <span class="status-label">${label}</span>
                         </div>
                         <div class="bar-wrapper">
-                            <div class="bar-bg">
-                                <div class="bar-fill" style="width: ${Math.min(member.percent, 100)}%"></div>
-                            </div>
+                            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(member.percent, 100)}%"></div></div>
                             <span class="bar-percent">${member.percent}%</span>
                         </div>
                     </div>`;
             });
-            podDiv.innerHTML = membersHtml;
+            podDiv.innerHTML = html;
             container.innerHTML += podDiv.outerHTML;
         });
-    } catch (e) { console.error("Refresh Error", e); }
+    } catch (e) { console.error(e); }
 }
-
 setInterval(refreshDashboard, 30000);
 refreshDashboard();

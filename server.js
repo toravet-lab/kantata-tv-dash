@@ -8,7 +8,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.static('public'));
 
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
-let liveCounts = { projects: 0, tasks: 0 };
+let liveCounts = { projects: 0, tasks: 0, overdue: 0 };
 
 const PODS = {
   "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
@@ -17,21 +17,13 @@ const PODS = {
 
 app.post('/api/upload-csv', (req, res) => {
     try {
-        const { csv, projectCount, taskCount } = req.body;
-        
-        if (csv) {
-            fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
-            console.log("Kantata CSV Updated.");
-        }
-
+        const { csv, projectCount, taskCount, overdueCount } = req.body;
+        if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
         liveCounts.projects = projectCount || 0;
         liveCounts.tasks = taskCount || 0;
-
+        liveCounts.overdue = overdueCount || 0;
         res.status(200).send("Sync Successful");
-    } catch (err) { 
-        console.error("Sync Error:", err);
-        res.status(500).send("Error"); 
-    }
+    } catch (err) { res.status(500).send("Error"); }
 });
 
 function parseKantataCSV(data) {
@@ -50,11 +42,12 @@ function parseKantataCSV(data) {
             name = `${p[1].trim()} ${p[0].trim()}`;
         }
         const hrs = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
-        const totalWeeklyAvail = hrs.reduce((a, b) => a + b, 0);
-        const utilPercent = Math.round(((40 - totalWeeklyAvail) / 40) * 100);
-        const remainingAvail = hrs.slice(dayIndex).reduce((a, b) => a + b, 0);
-
-        results.push({ name, available: remainingAvail, percent: utilPercent });
+        const totalSched = 40 - hrs.reduce((a, b) => a + b, 0);
+        results.push({ 
+            name, 
+            available: hrs.slice(dayIndex).reduce((a, b) => a + b, 0), 
+            percent: Math.round((totalSched / 40) * 100) 
+        });
     }
     return results;
 }
@@ -62,10 +55,7 @@ function parseKantataCSV(data) {
 app.get('/api/stats', (req, res) => {
     try {
         let teamData = [];
-        if (fs.existsSync(CSV_FILE_PATH)) {
-            teamData = parseKantataCSV(fs.readFileSync(CSV_FILE_PATH, 'utf8'));
-        }
-
+        if (fs.existsSync(CSV_FILE_PATH)) teamData = parseKantataCSV(fs.readFileSync(CSV_FILE_PATH, 'utf8'));
         const pods = Object.keys(PODS).map(podName => ({
             name: podName,
             members: PODS[podName].map(mName => {
@@ -74,14 +64,13 @@ app.get('/api/stats', (req, res) => {
                     name: mName,
                     hoursLeft: match ? match.available.toFixed(1) : "0.0",
                     percent: match ? match.percent : 0,
-                    isOver: match ? (match.percent > 100) : false 
                 };
             })
         }));
-
         res.json({
             projectCount: liveCounts.projects, 
             taskCount: liveCounts.tasks,
+            overdueCount: liveCounts.overdue,
             pulse: `RESOURCE AVAILABILITY: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
             lastUpdate: new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }),
             pods
@@ -89,4 +78,4 @@ app.get('/api/stats', (req, res) => {
     } catch (err) { res.status(500).json({ error: "Fail" }); }
 });
 
-app.listen(PORT, () => console.log("Station Active"));
+app.listen(PORT, () => console.log("Live"));
