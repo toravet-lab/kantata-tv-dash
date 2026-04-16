@@ -8,7 +8,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.static('public'));
 
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
-let liveCounts = { projects: 0, tasks: 0, overdue: 0 };
+let liveCounts = { projects: 0, started: 0, notStarted: 0, overdue: 0 };
 
 const PODS = {
   "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
@@ -17,11 +17,12 @@ const PODS = {
 
 app.post('/api/upload-csv', (req, res) => {
     try {
-        const { csv, projectCount, taskCount, overdueCount } = req.body;
+        const { csv, projectCount, startedCount, notStartedCount, overdueCount } = req.body;
         if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
         
         liveCounts.projects = projectCount || 0;
-        liveCounts.tasks = taskCount || 0;
+        liveCounts.started = startedCount || 0;
+        liveCounts.notStarted = notStartedCount || 0;
         liveCounts.overdue = overdueCount || 0;
 
         res.status(200).send("Sync Successful");
@@ -69,10 +70,10 @@ app.get('/api/stats', (req, res) => {
                 };
             })
         }));
-
         res.json({
             projectCount: liveCounts.projects, 
-            taskCount: liveCounts.tasks,
+            startedCount: liveCounts.started,
+            notStartedCount: liveCounts.notStarted,
             overdueCount: liveCounts.overdue,
             pulse: `RESOURCE AVAILABILITY: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
             lastUpdate: new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }),
@@ -81,4 +82,4 @@ app.get('/api/stats', (req, res) => {
     } catch (err) { res.status(500).json({ error: "Fail" }); }
 });
 
-app.listen(PORT, () => console.log("Station Active"));
+app.listen(PORT, () => console.log("Live"));

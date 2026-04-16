@@ -33,31 +33,34 @@ header {
     border-left: 6px solid var(--accent-blue);
 }
 
-.stat-card .label { color: var(--accent-blue); font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 5px; }
+.stat-card .label { color: var(--accent-blue); font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 10px; }
 .stat-card .value { font-size: 4rem; font-weight: 900; line-height: 1; }
 
-/* Overdue Card - High Contrast Red */
-.overdue-card { border-left-color: var(--accent-red); background: #3d1414; }
-.overdue-card .label, .overdue-card .value { color: var(--accent-red); }
+/* Split Task Styling */
+.value-split { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+.value.secondary { font-size: 2.2rem; color: var(--text-gray); }
+.sub-label { font-size: 0.6rem; font-weight: 800; color: var(--text-gray); letter-spacing: 1px; }
 
-.pulse-alert { animation: pulse-red 2s infinite; }
-@keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+/* Overdue Alert */
+.overdue-card { border-left-color: var(--accent-red); background: rgba(224, 40, 38, 0.1); }
+.overdue-card .label, .overdue-card .value { color: var(--accent-red); }
+.pulse-alert { animation: pulse-red 2.5s infinite; }
+@keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(224, 40, 38, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(224, 40, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(224, 40, 38, 0); } }
 
 #pods-container { margin-left: 320px; flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 .pod-card { background: #2c3032; padding: 30px; border-radius: 12px; }
-.pod-card h3 { font-size: 1.5rem; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 15px; margin-top: 0; letter-spacing: 1px; }
+.pod-card h3 { font-size: 1.5rem; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 15px; margin-top: 0; }
 
 .member-row { margin-bottom: 30px; }
 .member-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
 .member-name { font-size: 1.5rem; font-weight: 700; }
-.status-label { font-size: 0.7rem; font-weight: 900; letter-spacing: 1px; }
+.status-label { font-size: 0.7rem; font-weight: 900; }
 
 .bar-wrapper { display: flex; align-items: center; gap: 15px; }
 .bar-bg { flex: 1; height: 35px; background: var(--bg-black); border-radius: 4px; overflow: hidden; }
 .bar-fill { height: 100%; transition: width 1s ease-in-out; }
 .bar-percent { font-size: 2rem; font-weight: 900; width: 80px; text-align: right; }
 
-/* Visualization Colors */
 .status-normal .bar-fill { background: var(--accent-blue); }
 .status-normal .bar-percent, .status-normal .status-label { color: var(--accent-blue); }
 .status-warning .bar-fill { background: var(--accent-yellow); }
@@ -67,5 +70,5 @@ header {
 .status-overbooked .member-name { color: var(--accent-peach); }
 
 .sync-status { margin-top: auto; border-top: 1px solid #333; padding-top: 20px; }
-.sync-status h1 { font-size: 0.8rem; color: var(--text-gray); letter-spacing: 2px; margin: 0; }
-.sync-status p { color: var(--accent-blue); font-weight: bold; font-size: 0.9rem; margin: 5px 0 0; }
+.sync-status h1 { font-size: 0.8rem; color: var(--text-gray); letter-spacing: 2px; }
+.sync-status p { color: var(--accent-blue); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }

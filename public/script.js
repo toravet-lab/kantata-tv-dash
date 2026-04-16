@@ -10,7 +10,8 @@ async function refreshDashboard() {
         const data = await response.json();
 
         document.getElementById('project-count').textContent = data.projectCount;
-        document.getElementById('task-count').textContent = data.taskCount;
+        document.getElementById('started-count').textContent = data.startedCount;
+        document.getElementById('not-started-count').textContent = data.notStartedCount;
         document.getElementById('overdue-count').textContent = data.overdueCount;
         document.getElementById('last-update').textContent = `SYNC: ${data.lastUpdate}`;
         document.getElementById('pulse-text').textContent = data.pulse;
