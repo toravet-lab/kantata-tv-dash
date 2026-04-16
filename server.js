@@ -27,12 +27,9 @@ function parseKantataCSV(data) {
     const lines = data.split(/\r?\n/);
     const results = [];
     
-    // Timezone-safe date detection
     const nyTime = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
     const dateObj = new Date(nyTime);
-    let dayIndex = dateObj.getDay() - 1; // 0=Mon, 1=Tue...
-    
-    // Logic: If it's the weekend, show the full next week (Mon-Fri)
+    let dayIndex = dateObj.getDay() - 1; // 0=Mon, 1=Tue, 2=Wed...
     if (dayIndex < 0 || dayIndex > 4) dayIndex = 0; 
 
     for (let i = 1; i < lines.length; i++) {
@@ -45,11 +42,27 @@ function parseKantataCSV(data) {
             userName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
 
-        const allDaysAvail = row.slice(1, 6).map(val => parseFloat(val.replace(/"/g, '')) || 0);
-        const weeklyScheduled = 40 - allDaysAvail.reduce((a, b) => a + b, 0);
-        const remainingAvail = allDaysAvail.slice(dayIndex).reduce((a, b) => a + b, 0);
+        // 1. Get availability for the REMAINING days of the week
+        const remainingDays = row.slice(dayIndex + 1, 6).map(val => parseFloat(val.replace(/"/g, '')) || 0);
+        const totalAvailRemaining = remainingDays.reduce((a, b) => a + b, 0);
 
-        results.push({ name: userName, available: remainingAvail, scheduled: weeklyScheduled });
+        // 2. Calculate "Utilization %" more accurately
+        // We assume an 8h daily capacity. 
+        // We calculate: (Standard Capacity - Current Availability) / Standard Capacity
+        const daysLeft = (5 - dayIndex);
+        const totalCapacityRemaining = daysLeft * 8;
+        const scheduledHours = totalCapacityRemaining - totalAvailRemaining;
+        
+        // This gives us the % you see in Kantata (e.g., 112% if they are over 8h/day)
+        const utilization = totalCapacityRemaining > 0 
+            ? Math.round((scheduledHours / totalCapacityRemaining) * 100) 
+            : 0;
+
+        results.push({ 
+            name: userName, 
+            available: totalAvailRemaining, 
+            utilPercent: utilization 
+        });
     }
     return results;
 }
