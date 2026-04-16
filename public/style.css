@@ -36,7 +36,7 @@ header {
 .stat-card .label { color: var(--accent-blue); font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; display: block; margin-bottom: 5px; }
 .stat-card .value { font-size: 4rem; font-weight: 900; line-height: 1; }
 
-/* Overdue Styling */
+/* Overdue Card - High Contrast Red */
 .overdue-card { border-left-color: var(--accent-red); background: #3d1414; }
 .overdue-card .label, .overdue-card .value { color: var(--accent-red); }
 
@@ -45,19 +45,19 @@ header {
 
 #pods-container { margin-left: 320px; flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
 .pod-card { background: #2c3032; padding: 30px; border-radius: 12px; }
-.pod-card h3 { font-size: 1.5rem; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 15px; margin-top: 0; }
+.pod-card h3 { font-size: 1.5rem; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 15px; margin-top: 0; letter-spacing: 1px; }
 
 .member-row { margin-bottom: 30px; }
 .member-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
 .member-name { font-size: 1.5rem; font-weight: 700; }
-.status-label { font-size: 0.7rem; font-weight: 900; }
+.status-label { font-size: 0.7rem; font-weight: 900; letter-spacing: 1px; }
 
 .bar-wrapper { display: flex; align-items: center; gap: 15px; }
 .bar-bg { flex: 1; height: 35px; background: var(--bg-black); border-radius: 4px; overflow: hidden; }
 .bar-fill { height: 100%; transition: width 1s ease-in-out; }
 .bar-percent { font-size: 2rem; font-weight: 900; width: 80px; text-align: right; }
 
-/* Status Colors */
+/* Visualization Colors */
 .status-normal .bar-fill { background: var(--accent-blue); }
 .status-normal .bar-percent, .status-normal .status-label { color: var(--accent-blue); }
 .status-warning .bar-fill { background: var(--accent-yellow); }
@@ -65,3 +65,7 @@ header {
 .status-overbooked .bar-fill { background: var(--accent-red); }
 .status-overbooked .bar-percent, .status-overbooked .status-label { color: var(--accent-red); }
 .status-overbooked .member-name { color: var(--accent-peach); }
+
+.sync-status { margin-top: auto; border-top: 1px solid #333; padding-top: 20px; }
+.sync-status h1 { font-size: 0.8rem; color: var(--text-gray); letter-spacing: 2px; margin: 0; }
+.sync-status p { color: var(--accent-blue); font-weight: bold; font-size: 0.9rem; margin: 5px 0 0; }
