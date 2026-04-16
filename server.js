@@ -14,7 +14,6 @@ const PODS = {
   "Pod Idea Farm": ["Jorge Gomez", "Melanie Barrett", "Sydney Burgese"]
 };
 
-// RECEIVE FROM GOOGLE APPS SCRIPT
 app.post('/api/upload-csv', (req, res) => {
     try {
         if (!req.body) return res.status(400).send("No data");
@@ -27,9 +26,10 @@ function parseKantataCSV(data) {
     const lines = data.split(/\r?\n/);
     const results = [];
     
+    // Ensure we are calculating based on NY Time
     const nyTime = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
     const dateObj = new Date(nyTime);
-    let dayIndex = dateObj.getDay() - 1; // 0=Mon, 1=Tue, 2=Wed...
+    let dayIndex = dateObj.getDay() - 1; // 0=Mon, 1=Tue...
     if (dayIndex < 0 || dayIndex > 4) dayIndex = 0; 
 
     for (let i = 1; i < lines.length; i++) {
@@ -42,26 +42,20 @@ function parseKantataCSV(data) {
             userName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
 
-        // 1. Get availability for the REMAINING days of the week
-        const remainingDays = row.slice(dayIndex + 1, 6).map(val => parseFloat(val.replace(/"/g, '')) || 0);
-        const totalAvailRemaining = remainingDays.reduce((a, b) => a + b, 0);
-
-        // 2. Calculate "Utilization %" more accurately
-        // We assume an 8h daily capacity. 
-        // We calculate: (Standard Capacity - Current Availability) / Standard Capacity
-        const daysLeft = (5 - dayIndex);
-        const totalCapacityRemaining = daysLeft * 8;
-        const scheduledHours = totalCapacityRemaining - totalAvailRemaining;
+        const allDaysAvail = row.slice(1, 6).map(val => parseFloat(val.replace(/"/g, '')) || 0);
         
-        // This gives us the % you see in Kantata (e.g., 112% if they are over 8h/day)
-        const utilization = totalCapacityRemaining > 0 
-            ? Math.round((scheduledHours / totalCapacityRemaining) * 100) 
-            : 0;
+        // MATH: Kantata Utilization %
+        // Total Scheduled = 40h standard - Sum of all availability in the CSV
+        const totalAvailRemaining = allDaysAvail.slice(dayIndex).reduce((a, b) => a + b, 0);
+        const totalWeeklyScheduled = 40 - allDaysAvail.reduce((a, b) => a + b, 0);
+        
+        // This allows percentages > 100% (e.g., Sydney at 112%)
+        const utilPercent = Math.round((totalWeeklyScheduled / 40) * 100);
 
         results.push({ 
             name: userName, 
             available: totalAvailRemaining, 
-            utilPercent: utilization 
+            percent: utilPercent 
         });
     }
     return results;
@@ -75,29 +69,22 @@ app.get('/api/stats', (req, res) => {
         const livePods = Object.keys(PODS).map(podName => {
             const members = PODS[podName].map(name => {
                 const match = teamData.find(u => u.name.toLowerCase().includes(name.toLowerCase()));
-                const availHours = match ? match.available : 0;
-                const schedHours = match ? match.scheduled : 0;
-                
                 return {
                     name: name,
-                    hoursLeft: availHours.toFixed(1),
-                    avail: Math.round((schedHours / 40) * 100),
-                    isOver: availHours < 0 
+                    hoursLeft: match ? match.available.toFixed(1) : "0.0",
+                    percent: match ? match.percent : 0,
+                    isOver: match ? (match.available < 0 || match.percent > 100) : false 
                 };
             });
             return { name: podName, members };
         });
 
-        // Current Day for the Header
-        const currentDayName = new Intl.DateTimeFormat('en-US', {
-            weekday: 'long', 
-            timeZone: 'America/New_York'
-        }).format(new Date());
+        const currentDay = new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date());
 
         res.json({
             projectCount: 14, 
             taskCount: 82,
-            pulse: `RESOURCE AVAILABILITY: ${currentDayName.toUpperCase()}`,
+            pulse: `RESOURCE AVAILABILITY: ${currentDay.toUpperCase()}`,
             lastUpdate: new Date().toLocaleTimeString('en-US', { 
                 timeZone: 'America/New_York', 
                 hour: '2-digit', 
@@ -108,4 +95,4 @@ app.get('/api/stats', (req, res) => {
     } catch (err) { res.status(500).json({ error: "Fail" }); }
 });
 
-app.listen(PORT, () => console.log(`Ready on ${PORT}`));
+app.listen(PORT, () => console.log(`Dashboard Online on ${PORT}`));

@@ -2,7 +2,6 @@ async function refreshDashboard() {
     const urlParams = new URLSearchParams(window.location.search);
     const secretKey = urlParams.get('key');
 
-    // SECURE GATEKEEPER
     if (secretKey !== 'agency2024') {
         document.body.innerHTML = `
             <div style="background:#050a0a; color:white; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif;">
@@ -31,6 +30,7 @@ async function refreshDashboard() {
             let membersHtml = `<h3>${pod.name}</h3>`;
             pod.members.forEach(member => {
                 const statusClass = member.isOver ? 'overbooked' : 'normal';
+                
                 membersHtml += `
                     <div class="member-row ${statusClass}">
                         <div class="member-header">
@@ -39,16 +39,17 @@ async function refreshDashboard() {
                         </div>
                         <div class="bar-wrapper">
                             <div class="bar-bg">
-                                <div class="bar-fill" style="width: ${Math.min(member.avail, 100)}%"></div>
+                                <div class="bar-fill" style="width: ${Math.min(member.percent, 100)}%"></div>
                             </div>
-                            <span class="bar-percent">${member.avail}%</span>
+                            <span class="bar-percent">${member.percent}%</span>
                         </div>
                     </div>`;
             });
             podDiv.innerHTML = membersHtml;
             container.innerHTML += podDiv.outerHTML;
         });
-    } catch (e) { console.error("Refresh Error", e); }
+
+    } catch (error) { console.error("Refresh Failed", error); }
 }
 
 setInterval(refreshDashboard, 30000);
