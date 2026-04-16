@@ -25,11 +25,9 @@ app.post('/api/upload-csv', (req, res) => {
 function parseKantataCSV(data) {
     const lines = data.split(/\r?\n/);
     const results = [];
-    
-    // Ensure we are calculating based on NY Time
     const nyTime = new Date().toLocaleString("en-US", {timeZone: "America/New_York"});
     const dateObj = new Date(nyTime);
-    let dayIndex = dateObj.getDay() - 1; // 0=Mon, 1=Tue...
+    let dayIndex = dateObj.getDay() - 1; 
     if (dayIndex < 0 || dayIndex > 4) dayIndex = 0; 
 
     for (let i = 1; i < lines.length; i++) {
@@ -42,21 +40,22 @@ function parseKantataCSV(data) {
             userName = `${parts[1].trim()} ${parts[0].trim()}`;
         }
 
-        const allDaysAvail = row.slice(1, 6).map(val => parseFloat(val.replace(/"/g, '')) || 0);
-        
-        // MATH: Kantata Utilization %
-        // Total Scheduled = 40h standard - Sum of all availability in the CSV
-        const totalAvailRemaining = allDaysAvail.slice(dayIndex).reduce((a, b) => a + b, 0);
-        const totalWeeklyScheduled = 40 - allDaysAvail.reduce((a, b) => a + b, 0);
-        
-        // This allows percentages > 100% (e.g., Sydney at 112%)
+        const m = parseFloat(row[1].replace(/"/g, '')) || 0;
+        const t = parseFloat(row[2].replace(/"/g, '')) || 0;
+        const w = parseFloat(row[3].replace(/"/g, '')) || 0;
+        const th = parseFloat(row[4].replace(/"/g, '')) || 0;
+        const f = parseFloat(row[5].replace(/"/g, '')) || 0;
+        const week = [m, t, w, th, f];
+
+        // UTILIZATION MATH: (40h capacity - sum of availability) / 40h
+        const totalWeeklyAvail = m + t + w + th + f;
+        const totalWeeklyScheduled = 40 - totalWeeklyAvail;
         const utilPercent = Math.round((totalWeeklyScheduled / 40) * 100);
 
-        results.push({ 
-            name: userName, 
-            available: totalAvailRemaining, 
-            percent: utilPercent 
-        });
+        // REMAINING HOURS: Only today through Friday
+        const remainingAvail = week.slice(dayIndex).reduce((a, b) => a + b, 0);
+
+        results.push({ name: userName, available: remainingAvail, percent: utilPercent });
     }
     return results;
 }
@@ -73,7 +72,7 @@ app.get('/api/stats', (req, res) => {
                     name: name,
                     hoursLeft: match ? match.available.toFixed(1) : "0.0",
                     percent: match ? match.percent : 0,
-                    isOver: match ? (match.available < 0 || match.percent > 100) : false 
+                    isOver: match ? (match.percent > 100) : false 
                 };
             });
             return { name: podName, members };
@@ -85,14 +84,10 @@ app.get('/api/stats', (req, res) => {
             projectCount: 14, 
             taskCount: 82,
             pulse: `RESOURCE AVAILABILITY: ${currentDay.toUpperCase()}`,
-            lastUpdate: new Date().toLocaleTimeString('en-US', { 
-                timeZone: 'America/New_York', 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            }),
+            lastUpdate: new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }),
             pods: livePods
         });
     } catch (err) { res.status(500).json({ error: "Fail" }); }
 });
 
-app.listen(PORT, () => console.log(`Dashboard Online on ${PORT}`));
+app.listen(PORT, () => console.log(`Command Center Live` ));
