@@ -1,7 +1,7 @@
 body {
-    background-color: #050a0a;
+    background-color: #004c6c;
     color: white;
-    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
     padding: 40px;
     min-height: 100vh;
@@ -76,14 +76,14 @@ header {
 .bar-bg {
     flex-grow: 1;
     height: 50px;
-    background: #1a2626;
+    background: #808284;
     border-radius: 8px;
     overflow: hidden;
 }
 
 .bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #00bd65, #00ff88);
+    background: linear-gradient(90deg, #51bfe2, #51bfe2);
     transition: width 1s ease-in-out;
 }
 
@@ -97,8 +97,8 @@ header {
 /* RED ALERT FOR OVERBOOKED */
 .member-row.overbooked .member-name,
 .member-row.overbooked .member-avail,
-.member-row.overbooked .bar-percent { color: #ff4444; }
+.member-row.overbooked .bar-percent { color: #e02826; }
 
 .member-row.overbooked .bar-fill {
-    background: linear-gradient(90deg, #cc0000, #ff4444);
+    background: linear-gradient(90deg, #e02826, #e02826);
 }
