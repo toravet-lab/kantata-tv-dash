@@ -4,11 +4,9 @@ async function refreshDashboard() {
         document.body.innerHTML = `<h1 style="color:white;text-align:center;padding-top:50px;">ACCESS DENIED</h1>`;
         return;
     }
-
     try {
         const response = await fetch('/api/stats');
         const data = await response.json();
-
         document.getElementById('project-count').textContent = data.projectCount;
         document.getElementById('started-count').textContent = data.startedCount;
         document.getElementById('not-started-count').textContent = data.notStartedCount;
@@ -22,7 +20,6 @@ async function refreshDashboard() {
 
         const container = document.getElementById('pods-container');
         container.innerHTML = '';
-
         data.pods.forEach(pod => {
             const podDiv = document.createElement('div');
             podDiv.className = 'pod-card';
@@ -32,21 +29,10 @@ async function refreshDashboard() {
                 let label = `${member.hoursLeft}H LEFT`;
                 if (member.percent > 85 && member.percent <= 100) status = 'status-warning', label = 'AT CAPACITY';
                 if (member.percent > 100) status = 'status-overbooked', label = `OVERBOOKED (${member.hoursLeft}H)`;
-                
-                html += `
-                    <div class="member-row ${status}">
-                        <div class="member-header">
-                            <span class="member-name">${member.name}</span>
-                            <span class="status-label">${label}</span>
-                        </div>
-                        <div class="bar-wrapper">
-                            <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(member.percent, 100)}%"></div></div>
-                            <span class="bar-percent">${member.percent}%</span>
-                        </div>
-                    </div>`;
+                html += `<div class="member-row ${status}"><div class="member-header"><span class="member-name">${member.name}</span><span class="status-label">${label}</span></div><div class="bar-wrapper"><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(member.percent, 100)}%"></div></div><span class="bar-percent">${member.percent}%</span></div></div>`;
             });
             podDiv.innerHTML = html;
-            container.innerHTML += podDiv.outerHTML;
+            container.appendChild(podDiv);
         });
     } catch (e) { console.error("Refresh Error", e); }
 }

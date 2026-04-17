@@ -10,12 +10,11 @@ app.use(express.static('public'));
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
 const COUNTS_FILE_PATH = path.join(__dirname, 'counts.json');
 
-// LOAD EXISTING COUNTS ON RESTART
 let liveCounts = { projects: 0, started: 0, notStarted: 0, overdue: 0 };
 if (fs.existsSync(COUNTS_FILE_PATH)) {
     try {
         liveCounts = JSON.parse(fs.readFileSync(COUNTS_FILE_PATH, 'utf8'));
-    } catch (e) { console.log("Restarting: Loaded saved counts."); }
+    } catch (e) { console.log("Persistence: Counts loaded."); }
 }
 
 const PODS = {
@@ -26,16 +25,27 @@ const PODS = {
 app.post('/api/upload-csv', (req, res) => {
     try {
         const { csv, projectCount, startedCount, notStartedCount, overdueCount } = req.body;
+        
+        // Save CSV if provided
         if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
         
-        liveCounts.projects = projectCount || 0;
-        liveCounts.started = startedCount || 0;
-        liveCounts.notStarted = notStartedCount || 0;
-        liveCounts.overdue = overdueCount || 0;
+        // FORCE REPLACEMENT: We set the object from scratch to avoid ghost data
+        liveCounts = {
+            projects: Number(projectCount) || 0,
+            started: Number(startedCount) || 0,
+            notStarted: Number(notStartedCount) || 0,
+            overdue: Number(overdueCount) || 0
+        };
 
+        // Write the fresh "Truth" to the persistent file
         fs.writeFileSync(COUNTS_FILE_PATH, JSON.stringify(liveCounts), 'utf8');
+
+        console.log(`Sync Success: S:${liveCounts.started} N:${liveCounts.notStarted} O:${liveCounts.overdue}`);
         res.status(200).send("Sync Successful");
-    } catch (err) { res.status(500).send("Error"); }
+    } catch (err) { 
+        console.error("Sync Error:", err);
+        res.status(500).send("Error"); 
+    }
 });
 
 function parseKantataCSV(data) {
@@ -54,22 +64,13 @@ function parseKantataCSV(data) {
             name = `${p[1].trim()} ${p[0].trim()}`;
         }
         
-        // M-F Available Hours
         const availValues = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
-        
-        // Math: 40hr week - Sum of Available hours = Scheduled hours
         const totalAvailable = availValues.reduce((a, b) => a + b, 0);
         const scheduled = 40 - totalAvailable;
         const percent = Math.round((scheduled / 40) * 100);
-
-        // Remaining availability for the week (starting from today)
         const currentAvail = availValues.slice(dayIndex).reduce((a, b) => a + b, 0);
 
-        results.push({ 
-            name, 
-            available: currentAvail.toFixed(1), 
-            percent: percent 
-        });
+        results.push({ name, available: currentAvail.toFixed(1), percent: percent });
     }
     return results;
 }
