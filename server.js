@@ -14,7 +14,7 @@ let liveCounts = { projects: 0, started: 0, notStarted: 0, overdue: 0 };
 if (fs.existsSync(COUNTS_FILE_PATH)) {
     try {
         liveCounts = JSON.parse(fs.readFileSync(COUNTS_FILE_PATH, 'utf8'));
-    } catch (e) { console.log("Persistence: Counts loaded."); }
+    } catch (e) { console.log("Persistence loaded."); }
 }
 
 const PODS = {
@@ -25,27 +25,18 @@ const PODS = {
 app.post('/api/upload-csv', (req, res) => {
     try {
         const { csv, projectCount, startedCount, notStartedCount, overdueCount } = req.body;
-        
-        // Save CSV if provided
         if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
         
-        // FORCE REPLACEMENT: We set the object from scratch to avoid ghost data
         liveCounts = {
-            projects: Number(projectCount) || 0,
-            started: Number(startedCount) || 0,
-            notStarted: Number(notStartedCount) || 0,
-            overdue: Number(overdueCount) || 0
+            projects: projectCount || 0,
+            started: startedCount || 0,
+            notStarted: notStartedCount || 0,
+            overdue: overdueCount || 0
         };
 
-        // Write the fresh "Truth" to the persistent file
         fs.writeFileSync(COUNTS_FILE_PATH, JSON.stringify(liveCounts), 'utf8');
-
-        console.log(`Sync Success: S:${liveCounts.started} N:${liveCounts.notStarted} O:${liveCounts.overdue}`);
         res.status(200).send("Sync Successful");
-    } catch (err) { 
-        console.error("Sync Error:", err);
-        res.status(500).send("Error"); 
-    }
+    } catch (err) { res.status(500).send("Error"); }
 });
 
 function parseKantataCSV(data) {
@@ -63,14 +54,12 @@ function parseKantataCSV(data) {
             const p = name.split(',');
             name = `${p[1].trim()} ${p[0].trim()}`;
         }
-        
         const availValues = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
         const totalAvailable = availValues.reduce((a, b) => a + b, 0);
         const scheduled = 40 - totalAvailable;
         const percent = Math.round((scheduled / 40) * 100);
         const currentAvail = availValues.slice(dayIndex).reduce((a, b) => a + b, 0);
-
-        results.push({ name, available: currentAvail.toFixed(1), percent: percent });
+        results.push({ name, available: currentAvail.toFixed(1), percent });
     }
     return results;
 }
@@ -91,11 +80,8 @@ app.get('/api/stats', (req, res) => {
             })
         }));
         res.json({
-            projectCount: liveCounts.projects, 
-            startedCount: liveCounts.started,
-            notStartedCount: liveCounts.notStarted,
-            overdueCount: liveCounts.overdue,
-            pulse: `RESOURCE AVAILABILITY: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
+            ...liveCounts,
+            pulse: `PIPELINE ACTIVE: ${new Intl.DateTimeFormat('en-US', {weekday: 'long', timeZone: 'America/New_York'}).format(new Date()).toUpperCase()}`,
             lastUpdate: new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit' }),
             pods
         });
