@@ -67,7 +67,7 @@ header {
 .status-warning .bar-percent, .status-warning .status-label { color: var(--accent-yellow); }
 .status-overbooked .bar-fill { background: var(--accent-red); }
 .status-overbooked .bar-percent, .status-overbooked .status-label { color: var(--accent-red); }
-.status-overbooked .member-name { color: var(--accent-peach); }
+.status-overbooked .member-name { color: var(--accent-red); }
 
 .sync-status { margin-top: auto; border-top: 1px solid #333; padding-top: 20px; }
 .sync-status h1 { font-size: 0.8rem; color: var(--text-gray); letter-spacing: 2px; }
