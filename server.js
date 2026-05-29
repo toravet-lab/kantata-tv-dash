@@ -22,7 +22,7 @@ if (fs.existsSync(COUNTS_FILE_PATH)) {
 const PODS = {
   "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
   "Pod Idea Farm": ["Jorge Gomez", "Melanie Barrett", "Sydney Burgese"],
-  "Digital Team": ["Chris Campbell", "Katrina Alber", "Kyle Washburn"]
+  "Digital Team": ["Chris Campbell", "Katrina Alber"]
 };
 
 app.post('/api/upload-csv', (req, res) => {
