@@ -9,6 +9,7 @@ async function refreshDashboard() {
         const response = await fetch('/api/stats');
         const data = await response.json();
 
+        // Populate Sidebar Globally
         document.getElementById('project-count').textContent = data.projects;
         document.getElementById('started-count').textContent = data.started;
         document.getElementById('not-started-count').textContent = data.notStarted;
@@ -23,10 +24,12 @@ async function refreshDashboard() {
         const container = document.getElementById('pods-container');
         container.innerHTML = '';
 
+        // Dynamically build Pod Cards
         data.pods.forEach(pod => {
             const podDiv = document.createElement('div');
             podDiv.className = 'pod-card';
             let html = `<h3>${pod.name}</h3>`;
+            
             pod.members.forEach(member => {
                 let status = 'status-normal';
                 let label = `${member.hoursLeft}H LEFT`;
@@ -35,10 +38,19 @@ async function refreshDashboard() {
                 if (member.percent > 100) status = 'status-overbooked', label = `OVERBOOKED (${member.hoursLeft}H)`;
                 if (member.percent === 0) label = 'READY';
 
+                // Inline task count tracking badges
+                let badges = `<span class="badge badge-started">${member.startedTasks} Act</span>`;
+                if (member.overdueTasks > 0) {
+                    badges += `<span class="badge badge-overdue">${member.overdueTasks} Late</span>`;
+                }
+
                 html += `
                     <div class="member-row ${status}">
                         <div class="member-header">
-                            <span class="member-name">${member.name}</span>
+                            <div class="name-badge-group">
+                                <span class="member-name">${member.name}</span>
+                                <div class="badges-wrapper">${badges}</div>
+                            </div>
                             <span class="status-label">${label}</span>
                         </div>
                         <div class="bar-wrapper">
@@ -52,5 +64,7 @@ async function refreshDashboard() {
         });
     } catch (e) { console.error("Refresh Error", e); }
 }
+
+// Poll status data every 30 seconds
 setInterval(refreshDashboard, 30000);
 refreshDashboard();
