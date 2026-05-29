@@ -34,9 +34,22 @@ async function refreshDashboard() {
                 let status = 'status-normal';
                 let label = `${member.hoursLeft}H LEFT`;
                 
-                if (member.percent > 85 && member.percent <= 100) status = 'status-warning', label = 'AT CAPACITY';
-                if (member.percent > 100) status = 'status-overbooked', label = `OVERBOOKED (${member.hoursLeft}H)`;
-                if (member.percent === 0) label = 'READY';
+                // 🚪 Out of Office Check: 0% and 0 Hours remaining
+                if (member.percent === 0 && parseFloat(member.hoursLeft) === 0) {
+                    status = 'status-ooo';
+                    label = 'OUT OF OFFICE';
+                } 
+                else if (member.percent > 85 && member.percent <= 100) {
+                    status = 'status-warning';
+                    label = 'AT CAPACITY';
+                } 
+                else if (member.percent > 100) {
+                    status = 'status-overbooked';
+                    label = `OVERBOOKED (${member.hoursLeft}H)`;
+                } 
+                else if (member.percent === 0) {
+                    label = 'READY';
+                }
 
                 // Inline task count tracking badges
                 let badges = `<span class="badge badge-started">${member.startedTasks} Act</span>`;

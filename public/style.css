@@ -179,28 +179,32 @@ header {
 .status-overbooked .bar-percent, .status-overbooked .status-label { color: var(--accent-red); }
 .status-overbooked .member-name { color: var(--accent-red); }
 
-/* FOOTER / SYNC STATUS */
-.sync-status { 
-    margin-top: auto; 
-    border-top: 1px solid #333; 
-    padding-top: 20px; 
+/* OUT OF OFFICE (OOO) STATUS DISPLAY */
+.status-ooo .member-name, 
+.status-ooo .status-label {
+    color: #6a6f73; /* Mute text significantly */
 }
 
-.sync-status h1 { 
-    font-size: 0.8rem; 
-    color: var(--text-gray); 
-    letter-spacing: 2px; 
-    margin: 0;
+.status-ooo .bar-percent {
+    color: #494e52;
 }
 
-.sync-status p { 
-    color: var(--accent-blue); 
-    font-weight: bold; 
-    font-size: 0.9rem; 
-    margin-top: 5px; 
+.status-ooo .bar-bg {
+    background: repeating-linear-gradient(
+        45deg,
+        #242729,
+        #242729 8px,
+        #353a3d 8px,
+        #353a3d 16px
+    );
+    border: 1px solid #3a3f42;
 }
 
-/* Inline Task Badges */
+.status-ooo .bar-fill {
+    display: none; /* Strip inner bar progress representation completely */
+}
+
+/* INLINE INDIVIDUAL TASK COUNTER BADGES */
 .name-badge-group {
     display: flex;
     align-items: center;
@@ -224,20 +228,41 @@ header {
 }
 
 .badge-started {
-    background: rgba(81, 191, 226, 0.15);
+    background: rgba(81, 191, 226, 0.12);
     color: var(--accent-blue);
-    border: 1px solid rgba(81, 191, 226, 0.3);
+    border: 1px solid rgba(81, 191, 226, 0.25);
 }
 
 .badge-overdue {
-    background: rgba(239, 147, 146, 0.2);
+    background: rgba(239, 147, 146, 0.18);
     color: var(--accent-red);
-    border: 1px solid rgba(239, 147, 146, 0.4);
-    animation: pulse-border 2s infinite;
+    border: 1px solid rgba(239, 147, 146, 0.35);
+    animation: badge-pulse 2.5s infinite;
 }
 
-@keyframes pulse-border {
-    0% { border-color: rgba(239, 147, 146, 0.4); }
-    50% { border-color: rgba(239, 147, 146, 0.9); }
-    100% { border-color: rgba(239, 147, 146, 0.4); }
+@keyframes badge-pulse {
+    0% { border-color: rgba(239, 147, 146, 0.35); }
+    50% { border-color: rgba(239, 147, 146, 0.85); }
+    100% { border-color: rgba(239, 147, 146, 0.35); }
+}
+
+/* FOOTER / SYNC STATUS */
+.sync-status { 
+    margin-top: auto; 
+    border-top: 1px solid #333; 
+    padding-top: 20px; 
+}
+
+.sync-status h1 { 
+    font-size: 0.8rem; 
+    color: var(--text-gray); 
+    letter-spacing: 2px; 
+    margin: 0;
+}
+
+.sync-status p { 
+    color: var(--accent-blue); 
+    font-weight: bold; 
+    font-size: 0.9rem; 
+    margin-top: 5px; 
 }
