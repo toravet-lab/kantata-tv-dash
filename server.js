@@ -10,7 +10,6 @@ app.use(express.static('public'));
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
 const COUNTS_FILE_PATH = path.join(__dirname, 'counts.json');
 
-// Initialize with memberCounts tracking
 let liveCounts = { projects: 0, started: 0, notStarted: 0, overdue: 0, memberCounts: {} };
 
 if (fs.existsSync(COUNTS_FILE_PATH)) {
@@ -22,7 +21,7 @@ if (fs.existsSync(COUNTS_FILE_PATH)) {
 const PODS = {
   "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
   "Pod Idea Farm": ["Jorge Gomez", "Melanie Barrett", "Sydney Burgese"],
-  "Digital Team": ["Chris Campbell", "Katrina Alber", "Kyle Washburn"]
+  "Digital Team": ["Bri Weimer", "Kyle Washburn"]
 };
 
 app.post('/api/upload-csv', (req, res) => {
@@ -58,12 +57,24 @@ function parseKantataCSV(data) {
             const p = name.split(',');
             name = `${p[1].trim()} ${p[0].trim()}`;
         }
+        
         const availValues = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
         const totalAvailable = availValues.reduce((a, b) => a + b, 0);
+        
+        // 🤖 AUTOMATED VACATION ENGINE:
+        // If they have 0.0 available client hours across Monday-Friday, they are structurally OOO
+        const isVacationData = availValues.every(val => val === 0);
+
         const scheduled = 40 - totalAvailable;
         const percent = Math.round((scheduled / 40) * 100);
         const currentAvail = availValues.slice(dayIndex).reduce((a, b) => a + b, 0);
-        results.push({ name, available: currentAvail.toFixed(1), percent });
+        
+        results.push({ 
+            name, 
+            available: currentAvail.toFixed(1), 
+            percent,
+            isVacationData 
+        });
     }
     return results;
 }
@@ -77,8 +88,6 @@ app.get('/api/stats', (req, res) => {
             name: podName,
             members: PODS[podName].map(mName => {
                 const match = teamData.find(u => u.name.toLowerCase().includes(mName.toLowerCase()));
-                
-                // Fetch personal data tallies from saved state
                 const personalData = liveCounts.memberCounts[mName.toLowerCase()] || { started: 0, overdue: 0 };
                 
                 return {
@@ -86,7 +95,8 @@ app.get('/api/stats', (req, res) => {
                     hoursLeft: match ? match.available : "0.0",
                     percent: match ? match.percent : 0,
                     startedTasks: personalData.started || 0,
-                    overdueTasks: personalData.overdue || 0
+                    overdueTasks: personalData.overdue || 0,
+                    isOOO: match ? match.isVacationData : false // Bundled cleanly
                 };
             })
         }));

@@ -34,12 +34,8 @@ async function refreshDashboard() {
                 let status = 'status-normal';
                 let label = `${member.hoursLeft}H LEFT`;
                 
-                const numericHoursLeft = parseFloat(member.hoursLeft) || 0;
-
-                // 🤖 AUTOMATED OOO DETECTION
-                // If they have 0.0 hours available left in the week AND 0 active client tasks running,
-                // they are automatically grayed out as Out of Office.
-                if (numericHoursLeft === 0 && (member.startedTasks || 0) === 0) {
+                // 🚪 PURE AUTOMATED OOO DISPLAY TRIGGER
+                if (member.isOOO) {
                     status = 'status-ooo';
                     label = 'OUT OF OFFICE';
                 } 
@@ -51,7 +47,7 @@ async function refreshDashboard() {
                     status = 'status-overbooked';
                     label = `OVERBOOKED (${member.hoursLeft}H)`;
                 } 
-                else if (member.percent === 0 || numericHoursLeft >= 32) {
+                else if (member.percent === 0) {
                     label = 'READY';
                 }
 
