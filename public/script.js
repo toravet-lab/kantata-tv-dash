@@ -52,9 +52,9 @@ async function refreshDashboard() {
                 }
 
                 // Inline task count tracking badges
-                let badges = `<span class="badge badge-started">${member.startedTasks} Act</span>`;
+                let badges = `<span class="badge badge-started">${member.startedTasks} Active</span>`;
                 if (member.overdueTasks > 0) {
-                    badges += `<span class="badge badge-overdue">${member.overdueTasks} Late</span>`;
+                    badges += `<span class="badge badge-overdue">${member.overdueTasks} Overdue</span>`;
                 }
 
                 html += `
