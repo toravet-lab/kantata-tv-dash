@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agency Command Center</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 📊 Load Chart.js CDN for the 10-Day Trend Visualizer -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -23,7 +22,7 @@
             align-items: flex-start;
         }
 
-        /* Fixed Sidebar Alignment Control Panel */
+        /* Fixed Left Sidebar Panel */
         header.sidebar-fixed {
             width: 260px;
             position: sticky;
@@ -34,7 +33,7 @@
             gap: 15px;
         }
 
-        /* Master Canvas Area Container */
+        /* Main Content Workspace Layout Canvas */
         .content-canvas {
             flex-grow: 1;
             display: flex;
@@ -42,24 +41,25 @@
             gap: 24px;
         }
 
-        /* Top Row Stack Container (Holds Pod Racers & Idea Farm) */
-        .top-pods-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            width: 100%;
-        }
-
-        /* Bottom Row Split Grid (Digital Team next to Chart) */
-        .bottom-split-grid {
+        /* 🔼 TOP ROW GRID: Explicit side-by-side split for creative pods */
+        .top-split-grid {
             display: grid;
-            grid-template-columns: 1.2fr 1fr; /* Digital Team sits slightly wider than chart */
+            grid-template-columns: 1.2fr 1fr; /* Exact proportions matching the bottom grid */
             gap: 24px;
             align-items: stretch;
             width: 100%;
         }
 
-        /* Dynamic Class Assignment Fixes for JavaScript target appending */
+        /* 🔽 BOTTOM ROW GRID: Side-by-side split for digital & charts */
+        .bottom-split-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+            align-items: stretch;
+            width: 100%;
+        }
+
+        /* Unified Card Style */
         .pod-card {
             background: #2c3032;
             padding: 24px;
@@ -71,10 +71,8 @@
 </head>
 <body>
 
-    <!-- 🗺️ Master Outer Dashboard Grid Wrapper Container -->
     <div class="dashboard-wrapper">
 
-        <!-- LEFT PANEL COLUMN: Control Metrics -->
         <header class="sidebar-fixed">
             <div class="stat-card">
                 <span class="label">ACTIVE PROJECTS</span>
@@ -95,26 +93,23 @@
             </div>
         </header>
 
-        <!-- RIGHT CANVAS PANEL: Interactive Layout Presentation Area -->
         <div class="content-canvas">
             
-            <!-- 🔼 TOP ROW AREA: Holds Main Creative Production Pod Cards -->
-            <div id="top-pods-container" class="top-pods-stack"></div>
-            
-            <!-- 🔽 BOTTOM ROW AREA: Side-by-Side Split Workspace Grid -->
-            <div class="bottom-split-grid">
+            <div class="top-split-grid">
+                <div id="racers-pod-container"></div>
                 
-                <!-- Bottom Left Pane: Dedicated Dropzone for the Digital Team Card -->
+                <div id="ideafarm-pod-container"></div>
+            </div>
+            
+            <div class="bottom-split-grid">
                 <div id="digital-pod-container"></div>
                 
-                <!-- Bottom Right Pane: 10-Day Overdue Trend Visualizer Card -->
                 <div class="trend-chart-card" style="background: #2c3032; padding: 24px; border-radius: 12px; box-sizing: border-box; display: flex; flex-direction: column;">
                     <h3 style="font-size: 1.2rem; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 12px; margin-top: 0; margin-bottom: 16px; color: #F2F2F2; letter-spacing: 1px; font-weight: 600;">10-Day Task Overdue Trend</h3>
                     <div style="position: relative; width: 100%; flex-grow: 1; min-height: 240px;">
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
-                
             </div>
 
         </div>

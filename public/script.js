@@ -81,13 +81,16 @@ async function refreshDashboard() {
         if (data.overdue > 0) overdueWrapper.classList.add('pulse-alert');
         else overdueWrapper.classList.remove('pulse-alert');
 
-        // Clear target layout grid drops
-        const topContainer = document.getElementById('top-pods-container');
+        // Clear target configuration drops
+        const racersContainer = document.getElementById('racers-pod-container');
+        const ideafarmContainer = document.getElementById('ideafarm-pod-container');
         const digitalContainer = document.getElementById('digital-pod-container');
-        topContainer.innerHTML = '';
+        
+        racersContainer.innerHTML = '';
+        ideafarmContainer.innerHTML = '';
         digitalContainer.innerHTML = '';
 
-        // Dynamically parse and distribute cards based on identity rules
+        // Dynamically parse data arrays and send to targeted UI blocks
         data.pods.forEach(pod => {
             const podDiv = document.createElement('div');
             podDiv.className = 'pod-card';
@@ -135,20 +138,26 @@ async function refreshDashboard() {
             });
             podDiv.innerHTML = html;
             
-            // 🎯 SPLIT ROUTING RULE LAYER:
-            if (pod.name.toLowerCase().includes("digital")) {
+            // 🎯 MASTER DATA DISTRIBUTION GATEWAY
+            const podNameLower = pod.name.toLowerCase();
+            if (podNameLower.includes("digital")) {
                 digitalContainer.appendChild(podDiv);
+            } else if (podNameLower.includes("racers")) {
+                racersContainer.appendChild(podDiv);
+            } else if (podNameLower.includes("farm") || podNameLower.includes("idea")) {
+                ideafarmContainer.appendChild(podDiv);
             } else {
-                topContainer.appendChild(podDiv);
+                // Default fallback if a pod name changes down the road
+                racersContainer.appendChild(podDiv);
             }
         });
 
-        // Trigger trend chart layout update
+        // Sync and refresh the graph rendering engine
         if (data.history && data.history.length > 0) {
             renderTrendChart(data.history);
         }
 
-    } catch (e) { console.error("Refresh UI Exception Loop", e); }
+    } catch (e) { console.error("UI Refresh State Loop Failure", e); }
 }
 
 setInterval(refreshDashboard, 30000);
