@@ -5,44 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agency Command Center</title>
     <link rel="stylesheet" href="style.css">
-    <!-- 📊 Load Chart.js CDN for the 10-Day Trend Visualizer -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* 🚨 Inline layout structural patch to fix the visual card alignment */
+        body {
+            display: block; /* Overrides old flex rule to support structural wrapper */
+            overflow-y: auto;
+            margin: 0;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .dashboard-wrapper {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        /* Fixed Sidebar Alignment */
+        header.sidebar-fixed {
+            width: 260px;
+            position: sticky;
+            top: 40px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: auto;
+        }
+
+        /* Right Side Content Canvas Area Splitter */
+        .content-canvas {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* 2 parts Pod Cards to 1 part Trend Graph */
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Clean up standard container layout metrics override */
+        #pods-container.pods-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Stack individual Pod groups vertically */
+            gap: 30px;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="stat-card">
-            <span class="label">ACTIVE PROJECTS</span>
-            <span class="value" id="project-count">--</span>
-        </div>
-        <div class="stat-card">
-            <span class="label">TASKS</span>
-            <div class="value-split"><span class="value" id="started-count">--</span><span class="sub-label">STARTED</span></div>
-            <div class="value-split"><span class="value secondary" id="not-started-count">--</span><span class="sub-label">UPCOMING</span></div>
-        </div>
-        <div class="stat-card overdue-card" id="overdue-wrapper">
-            <span class="label">TASKS OVERDUE</span>
-            <span class="value" id="overdue-count">--</span>
-        </div>
-        <div class="sync-status">
-            <h1 id="pulse-text">STATION ACTIVE</h1>
-            <p id="last-update">Last Sync: --:--</p>
-        </div>
-    </header>
 
-    <!-- 🗺️ Main Dashboard Layout split to show the trend graph next to the Digital Team -->
-    <div class="main-dashboard-layout" style="display: flex; gap: 24px; align-items: flex-start; padding: 0 20px; box-sizing: border-box; width: 100%;">
-        
-        <!-- Left Side: Dynamic Pod Member Workload Cards -->
-        <div id="pods-container" class="pods-grid" style="flex: 2; margin: 0;"></div>
-        
-        <!-- Right Side: 10-Day Animated Overdue Trend Graph Card -->
-        <div class="trend-chart-card" style="flex: 1; background: #1e1e1e; padding: 20px; border-radius: 8px; border: 1px solid #2d2d2d; box-sizing: border-box; min-width: 340px;">
-            <h3 style="color: #ffffff; font-family: sans-serif; font-size: 1.1rem; letter-spacing: 0.5px; margin-top: 0; margin-bottom: 18px; border-bottom: 2px solid #2d2d2d; padding-bottom: 8px; font-weight: 600;">10-Day Overdue Trend</h3>
-            <div style="position: relative; width: 100%; height: 280px;">
-                <canvas id="trendChart"></canvas>
+    <div class="dashboard-wrapper">
+
+        <header class="sidebar-fixed">
+            <div class="stat-card">
+                <span class="label">ACTIVE PROJECTS</span>
+                <span class="value" id="project-count">--</span>
             </div>
+            <div class="stat-card">
+                <span class="label">TASKS</span>
+                <div class="value-split"><span class="value" id="started-count">--</span><span class="sub-label">STARTED</span></div>
+                <div class="value-split"><span class="value secondary" id="not-started-count">--</span><span class="sub-label">UPCOMING</span></div>
+            </div>
+            <div class="stat-card overdue-card" id="overdue-wrapper">
+                <span class="label">TASKS OVERDUE</span>
+                <span class="value" id="overdue-count">--</span>
+            </div>
+            <div class="sync-status">
+                <h1 id="pulse-text">STATION ACTIVE</h1>
+                <p id="last-update">Last Sync: --:--</p>
+            </div>
+        </header>
+
+        <div class="content-canvas">
+            
+            <div id="pods-container" class="pods-grid"></div>
+            
+            <div class="trend-chart-card" style="background: #2c3032; padding: 25px; border-radius: 12px; box-sizing: border-box; width: 100%; position: sticky; top: 40px;">
+                <h3 style="font-size: 1.3rem; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 12px; margin-top: 0; margin-bottom: 20px; color: #F2F2F2; letter-spacing: 1px; font-weight: 600;">10-Day Overdue Trend</h3>
+                <div style="position: relative; width: 100%; height: 320px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
         </div>
-        
+
     </div>
 
     <script src="script.js"></script>
