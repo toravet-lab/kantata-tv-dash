@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agency Command Center</title>
     <link rel="stylesheet" href="style.css">
+    <!-- 📊 Load Chart.js CDN for the 10-Day Trend Visualizer -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -26,7 +28,23 @@
             <p id="last-update">Last Sync: --:--</p>
         </div>
     </header>
-    <div id="pods-container" class="pods-grid"></div>
+
+    <!-- 🗺️ Main Dashboard Layout split to show the trend graph next to the Digital Team -->
+    <div class="main-dashboard-layout" style="display: flex; gap: 24px; align-items: flex-start; padding: 0 20px; box-sizing: border-box; width: 100%;">
+        
+        <!-- Left Side: Dynamic Pod Member Workload Cards -->
+        <div id="pods-container" class="pods-grid" style="flex: 2; margin: 0;"></div>
+        
+        <!-- Right Side: 10-Day Animated Overdue Trend Graph Card -->
+        <div class="trend-chart-card" style="flex: 1; background: #1e1e1e; padding: 20px; border-radius: 8px; border: 1px solid #2d2d2d; box-sizing: border-box; min-width: 340px;">
+            <h3 style="color: #ffffff; font-family: sans-serif; font-size: 1.1rem; letter-spacing: 0.5px; margin-top: 0; margin-bottom: 18px; border-bottom: 2px solid #2d2d2d; padding-bottom: 8px; font-weight: 600;">10-Day Overdue Trend</h3>
+            <div style="position: relative; width: 100%; height: 280px;">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+        
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
