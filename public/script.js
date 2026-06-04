@@ -5,14 +5,11 @@ function renderTrendChart(historyData) {
     if (!canvasElement) return;
     
     const ctx = canvasElement.getContext('2d');
-    
-    // Sort chronologically to guarantee correct trend flow mapping
     const sortedHistory = [...historyData].sort((a, b) => new Date(a.date) - new Date(b.date));
     
     const labels = sortedHistory.map(h => h.date);
     const dataPoints = sortedHistory.map(h => h.overdue);
 
-    // If the chart instance exists, smoothly transition data points to avoid rebuild overhead
     if (trendChartInstance) {
         trendChartInstance.data.labels = labels;
         trendChartInstance.data.datasets[0].data = dataPoints;
@@ -20,7 +17,6 @@ function renderTrendChart(historyData) {
         return;
     }
 
-    // Build the structural line chart with color patterns matching the core system layout
     trendChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
@@ -41,26 +37,20 @@ function renderTrendChart(historyData) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
+            plugins: { legend: { display: false } },
             scales: {
                 x: {
-                    grid: { color: '#262626' },
+                    grid: { color: '#383c3e' },
                     ticks: { 
                         color: '#8c8c8c', 
-                        font: { size: 10, family: 'sans-serif' },
+                        font: { size: 10 },
                         maxRotation: 45,
                         minRotation: 45
                     }
                 },
                 y: {
-                    grid: { color: '#262626' },
-                    ticks: { 
-                        color: '#8c8c8c', 
-                        font: { size: 10, family: 'sans-serif' },
-                        stepSize: 10 
-                    },
+                    grid: { color: '#383c3e' },
+                    ticks: { color: '#8c8c8c', stepSize: 10 },
                     beginAtZero: true
                 }
             }
@@ -79,7 +69,7 @@ async function refreshDashboard() {
         const response = await fetch('/api/stats');
         const data = await response.json();
 
-        // Populate Top Header Metric Counters Globally
+        // Populate Top Header Counters Globally
         document.getElementById('project-count').textContent = data.projects;
         document.getElementById('started-count').textContent = data.started;
         document.getElementById('not-started-count').textContent = data.notStarted;
@@ -91,14 +81,17 @@ async function refreshDashboard() {
         if (data.overdue > 0) overdueWrapper.classList.add('pulse-alert');
         else overdueWrapper.classList.remove('pulse-alert');
 
-        const container = document.getElementById('pods-container');
-        container.innerHTML = '';
+        // Clear target layout grid drops
+        const topContainer = document.getElementById('top-pods-container');
+        const digitalContainer = document.getElementById('digital-pod-container');
+        topContainer.innerHTML = '';
+        digitalContainer.innerHTML = '';
 
-        // Dynamically build individual Pod Member rows
+        // Dynamically parse and distribute cards based on identity rules
         data.pods.forEach(pod => {
             const podDiv = document.createElement('div');
             podDiv.className = 'pod-card';
-            let html = `<h3>${pod.name}</h3>`;
+            let html = `<h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.3rem; text-transform: uppercase; color: #fff; letter-spacing: 0.5px; border-bottom: 1px solid #444; padding-bottom: 10px;">${pod.name}</h3>`;
             
             pod.members.forEach(member => {
                 let status = 'status-normal';
@@ -141,17 +134,22 @@ async function refreshDashboard() {
                     </div>`;
             });
             podDiv.innerHTML = html;
-            container.appendChild(podDiv);
+            
+            // 🎯 SPLIT ROUTING RULE LAYER:
+            if (pod.name.toLowerCase().includes("digital")) {
+                digitalContainer.appendChild(podDiv);
+            } else {
+                topContainer.appendChild(podDiv);
+            }
         });
 
-        // Push historical payload directly to the rendering module
+        // Trigger trend chart layout update
         if (data.history && data.history.length > 0) {
             renderTrendChart(data.history);
         }
 
-    } catch (e) { console.error("Refresh Logic Exception", e); }
+    } catch (e) { console.error("Refresh UI Exception Loop", e); }
 }
 
-// Check for updates every 30 seconds
 setInterval(refreshDashboard, 30000);
 refreshDashboard();
