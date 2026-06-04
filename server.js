@@ -10,18 +10,48 @@ app.use(express.static('public'));
 const CSV_FILE_PATH = path.join(__dirname, 'latest_availability.csv');
 const COUNTS_FILE_PATH = path.join(__dirname, 'counts.json');
 
-let liveCounts = { projects: 0, started: 0, notStarted: 0, overdue: 0, memberCounts: {} };
+// 📊 Hardcoded historical backfill based on your tracking log snapshot
+const historicalSeedData = [
+    { date: "2026-05-25", overdue: 27 },
+    { date: "2026-05-26", overdue: 28 },
+    { date: "2026-05-27", overdue: 32 },
+    { date: "2026-05-28", overdue: 40 },
+    { date: "2026-05-29", overdue: 37 },
+    { date: "2026-05-30", overdue: 49 },
+    { date: "2026-05-31", overdue: 49 },
+    { date: "2026-06-01", overdue: 55 },
+    { date: "2026-06-02", overdue: 28 },
+    { date: "2026-06-03", overdue: 36 },
+    { date: "2026-06-04", overdue: 13 } // Today's morning anchor snapshot
+];
 
+let liveCounts = { 
+    projects: 0, 
+    started: 0, 
+    notStarted: 0, 
+    overdue: 13, 
+    memberCounts: {},
+    history: historicalSeedData // Pre-populates the template chart state
+};
+
+// Load existing data if available, ensuring history isn't blanked out
 if (fs.existsSync(COUNTS_FILE_PATH)) {
     try {
-        liveCounts = JSON.parse(fs.readFileSync(COUNTS_FILE_PATH, 'utf8'));
-    } catch (e) { console.log("Persistence loaded."); }
+        const fileData = JSON.parse(fs.readFileSync(COUNTS_FILE_PATH, 'utf8'));
+        liveCounts = { ...liveCounts, ...fileData };
+        if (!liveCounts.history || liveCounts.history.length === 0) {
+            liveCounts.history = historicalSeedData;
+        }
+    } catch (e) { console.log("Initializing persistent memory storage."); }
+} else {
+    // Seed the file right away on a fresh container cold-start
+    fs.writeFileSync(COUNTS_FILE_PATH, JSON.stringify(liveCounts), 'utf8');
 }
 
 const PODS = {
   "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
   "Pod Idea Farm": ["Jorge Gomez", "Melanie Barrett", "Sydney Burgese"],
-  "Digital Team": ["Chris Campbell", "Katrina Alber", "Kyle Washburn"]
+  "Digital Team": ["Bri Weimer", "Kyle Washburn"]
 };
 
 app.post('/api/upload-csv', (req, res) => {
@@ -29,12 +59,31 @@ app.post('/api/upload-csv', (req, res) => {
         const { csv, projectCount, startedCount, notStartedCount, overdueCount, memberCounts } = req.body;
         if (csv) fs.writeFileSync(CSV_FILE_PATH, csv, 'utf8');
         
+        const todayStr = new Date().toLocaleString("en-US", {timeZone: "America/New_York"}).split(',')[0];
+        const [m, d, y] = todayStr.split('/');
+        const formattedDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+
+        let currentHistory = liveCounts.history || historicalSeedData;
+        const existingDayIndex = currentHistory.findIndex(h => h.date === formattedDate);
+
+        if (existingDayIndex !== -1) {
+            currentHistory[existingDayIndex].overdue = overdueCount || 0;
+        } else {
+            currentHistory.push({ date: formattedDate, overdue: overdueCount || 0 });
+        }
+
+        // Maintain strict sliding 10-day log window limit
+        if (currentHistory.length > 10) {
+            currentHistory = currentHistory.slice(-10);
+        }
+
         liveCounts = {
             projects: projectCount || 0,
             started: startedCount || 0,
             notStarted: notStartedCount || 0,
             overdue: overdueCount || 0,
-            memberCounts: memberCounts || {}
+            memberCounts: memberCounts || {},
+            history: currentHistory
         };
 
         fs.writeFileSync(COUNTS_FILE_PATH, JSON.stringify(liveCounts), 'utf8');
@@ -60,21 +109,13 @@ function parseKantataCSV(data) {
         
         const availValues = row.slice(1, 6).map(v => parseFloat(v.replace(/"/g, '')) || 0);
         const totalAvailable = availValues.reduce((a, b) => a + b, 0);
-        
-        // 🤖 AUTOMATED VACATION ENGINE:
-        // If they have 0.0 available client hours across Monday-Friday, they are structurally OOO
         const isVacationData = availValues.every(val => val === 0);
 
         const scheduled = 40 - totalAvailable;
         const percent = Math.round((scheduled / 40) * 100);
         const currentAvail = availValues.slice(dayIndex).reduce((a, b) => a + b, 0);
         
-        results.push({ 
-            name, 
-            available: currentAvail.toFixed(1), 
-            percent,
-            isVacationData 
-        });
+        results.push({ name, available: currentAvail.toFixed(1), percent, isVacationData });
     }
     return results;
 }
@@ -96,7 +137,7 @@ app.get('/api/stats', (req, res) => {
                     percent: match ? match.percent : 0,
                     startedTasks: personalData.started || 0,
                     overdueTasks: personalData.overdue || 0,
-                    isOOO: match ? match.isVacationData : false // Bundled cleanly
+                    isOOO: match ? match.isVacationData : false
                 };
             })
         }));
