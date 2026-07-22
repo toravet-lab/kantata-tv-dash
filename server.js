@@ -12,7 +12,6 @@ const COUNTS_FILE_PATH = path.join(__dirname, 'counts.json');
 
 // 📊 Hardcoded historical backfill based on your tracking log snapshot
 const historicalSeedData = [
-    { date: "2026-05-25", overdue: 27 },
     { date: "2026-05-26", overdue: 28 },
     { date: "2026-05-27", overdue: 32 },
     { date: "2026-05-28", overdue: 40 },
@@ -49,8 +48,8 @@ if (fs.existsSync(COUNTS_FILE_PATH)) {
 }
 
 const PODS = {
-  "Pod Racers": ["Jean Piot", "Danielle Martin", "Nicole De Los Reyes", "Tara Diaz"],
-  "Pod Idea Farm": ["Jorge Gomez", "Melanie Barrett", "Sydney Burgese"],
+  "Team A": ["Nicole De Los Reyes", "Tara Diaz", "Danielle Martin", "Jorge Gomez"],
+  "Team B": ["Jean Piot","Sydney Burgese", "Melanie Barrett", "Jorge Gomez"],
   "Digital": ["Chris Campbell", "Katrina ALber", "Kyle Washburn"]
 };
 
