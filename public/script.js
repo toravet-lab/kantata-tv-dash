@@ -81,13 +81,13 @@ async function refreshDashboard() {
         if (data.overdue > 0) overdueWrapper.classList.add('pulse-alert');
         else overdueWrapper.classList.remove('pulse-alert');
 
-        // Clear target configuration drops
-        const racersContainer = document.getElementById('racers-pod-container');
-        const ideafarmContainer = document.getElementById('ideafarm-pod-container');
+        // Clear target configuration drops (matching your index.html IDs)
+        const teamAContainer = document.getElementById('team-a-container');
+        const teamBContainer = document.getElementById('team-b-container');
         const digitalContainer = document.getElementById('digital-pod-container');
         
-        if (racersContainer) racersContainer.innerHTML = '';
-        if (ideafarmContainer) ideafarmContainer.innerHTML = '';
+        if (teamAContainer) teamAContainer.innerHTML = '';
+        if (teamBContainer) teamBContainer.innerHTML = '';
         if (digitalContainer) digitalContainer.innerHTML = '';
 
         // Dynamically parse data arrays and send to targeted UI blocks
@@ -143,9 +143,9 @@ async function refreshDashboard() {
             if (podNameLower.includes("digital")) {
                 if (digitalContainer) digitalContainer.appendChild(podDiv);
             } else if (podNameLower.includes("team a")) {
-                if (racersContainer) racersContainer.appendChild(podDiv);
+                if (teamAContainer) teamAContainer.appendChild(podDiv);
             } else if (podNameLower.includes("team b")) {
-                if (ideafarmContainer) ideafarmContainer.appendChild(podDiv);
+                if (teamBContainer) teamBContainer.appendChild(podDiv);
             }
         });
 
