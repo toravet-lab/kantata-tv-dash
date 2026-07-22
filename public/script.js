@@ -82,8 +82,8 @@ async function refreshDashboard() {
         else overdueWrapper.classList.remove('pulse-alert');
 
         // Clear target configuration drops
-        const racersContainer = document.getElementById('racers-pod-container');
-        const ideafarmContainer = document.getElementById('ideafarm-pod-container');
+        const racersContainer = document.getElementById('team-a-container');
+        const ideafarmContainer = document.getElementById('team-b-container');
         const digitalContainer = document.getElementById('digital-pod-container');
         
         racersContainer.innerHTML = '';
