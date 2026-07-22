@@ -82,13 +82,13 @@ async function refreshDashboard() {
         else overdueWrapper.classList.remove('pulse-alert');
 
         // Clear target configuration drops
-        const racersContainer = document.getElementById('team-a-container');
-        const ideafarmContainer = document.getElementById('team-b-container');
+        const racersContainer = document.getElementById('racers-pod-container');
+        const ideafarmContainer = document.getElementById('ideafarm-pod-container');
         const digitalContainer = document.getElementById('digital-pod-container');
         
-        racersContainer.innerHTML = '';
-        ideafarmContainer.innerHTML = '';
-        digitalContainer.innerHTML = '';
+        if (racersContainer) racersContainer.innerHTML = '';
+        if (ideafarmContainer) ideafarmContainer.innerHTML = '';
+        if (digitalContainer) digitalContainer.innerHTML = '';
 
         // Dynamically parse data arrays and send to targeted UI blocks
         data.pods.forEach(pod => {
@@ -141,14 +141,11 @@ async function refreshDashboard() {
             // 🎯 MASTER DATA DISTRIBUTION GATEWAY
             const podNameLower = pod.name.toLowerCase();
             if (podNameLower.includes("digital")) {
-                digitalContainer.appendChild(podDiv);
-            } else if (podNameLower.includes("racers")) {
-                racersContainer.appendChild(podDiv);
-            } else if (podNameLower.includes("farm") || podNameLower.includes("idea")) {
-                ideafarmContainer.appendChild(podDiv);
-            } else {
-                // Default fallback if a pod name changes down the road
-                racersContainer.appendChild(podDiv);
+                if (digitalContainer) digitalContainer.appendChild(podDiv);
+            } else if (podNameLower.includes("team a")) {
+                if (racersContainer) racersContainer.appendChild(podDiv);
+            } else if (podNameLower.includes("team b")) {
+                if (ideafarmContainer) ideafarmContainer.appendChild(podDiv);
             }
         });
 
