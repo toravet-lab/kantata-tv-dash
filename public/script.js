@@ -81,17 +81,21 @@ async function refreshDashboard() {
         if (data.overdue > 0) overdueWrapper.classList.add('pulse-alert');
         else overdueWrapper.classList.remove('pulse-alert');
 
-        // Clear target configuration drops (matching your index.html IDs)
-        const teamAContainer = document.getElementById('team-a-container');
-        const teamBContainer = document.getElementById('team-b-container');
-        const digitalContainer = document.getElementById('digital-pod-container');
-        
-        if (teamAContainer) teamAContainer.innerHTML = '';
-        if (teamBContainer) teamBContainer.innerHTML = '';
-        if (digitalContainer) digitalContainer.innerHTML = '';
+        // Target grid layout slots in order
+        const containers = [
+            document.getElementById('team-a-container'),      // Slot 1: Top-Left
+            document.getElementById('team-b-container'),      // Slot 2: Top-Right
+            document.getElementById('digital-pod-container')  // Slot 3: Bottom-Left
+        ];
 
-        // Dynamically parse data arrays and send to targeted UI blocks
-        data.pods.forEach(pod => {
+        // Clear all target slots
+        containers.forEach(c => { if (c) c.innerHTML = ''; });
+
+        // Loop through returning pods by POSITION instead of name matching
+        data.pods.forEach((pod, index) => {
+            const targetContainer = containers[index];
+            if (!targetContainer) return;
+
             const podDiv = document.createElement('div');
             podDiv.className = 'pod-card';
             let html = `<h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.3rem; text-transform: uppercase; color: #fff; letter-spacing: 0.5px; border-bottom: 1px solid #444; padding-bottom: 10px;">${pod.name}</h3>`;
@@ -138,15 +142,7 @@ async function refreshDashboard() {
             });
             podDiv.innerHTML = html;
             
-            // 🎯 MASTER DATA DISTRIBUTION GATEWAY
-            const podNameLower = pod.name.toLowerCase();
-            if (podNameLower.includes("digital")) {
-                if (digitalContainer) digitalContainer.appendChild(podDiv);
-            } else if (podNameLower.includes("team a")) {
-                if (teamAContainer) teamAContainer.appendChild(podDiv);
-            } else if (podNameLower.includes("team b")) {
-                if (teamBContainer) teamBContainer.appendChild(podDiv);
-            }
+            targetContainer.appendChild(podDiv);
         });
 
         // Sync and refresh the graph rendering engine
