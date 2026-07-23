@@ -49,7 +49,7 @@ if (fs.existsSync(COUNTS_FILE_PATH)) {
 
 const PODS = {
   "Pod Fathers": ["Nicole De Los Reyes", "Tara Diaz", "Danielle Martin", "Jorge Gomez"],
-  "Dream Team": ["Jean Piot","Sydney Burgese", "Melanie Barrett", "Jorge Gomez"],
+  "Pod Dream Team": ["Jean Piot","Sydney Burgese", "Melanie Barrett", "Jorge Gomez"],
   "Digital": ["Chris Campbell", "Katrina ALber", "Kyle Washburn"]
 };
 
