@@ -13,14 +13,6 @@ const COUNTS_FILE_PATH = path.join(__dirname, 'counts.json');
 // 📊 Hardcoded historical backfill based on your tracking log snapshot
 const historicalSeedData = [
     { date: "2026-05-25", overdue: 27 },
-    { date: "2026-05-26", overdue: 28 },
-    { date: "2026-05-27", overdue: 32 },
-    { date: "2026-05-28", overdue: 40 },
-    { date: "2026-05-29", overdue: 37 },
-    { date: "2026-05-30", overdue: 49 },
-    { date: "2026-05-31", overdue: 49 },
-    { date: "2026-06-01", overdue: 55 },
-    { date: "2026-06-02", overdue: 28 },
     { date: "2026-06-03", overdue: 36 },
     { date: "2026-06-04", overdue: 13 }
 ];
